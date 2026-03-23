@@ -4,7 +4,7 @@
 
 Current scope is an MVP:
 - WeChat login and user sync
-- AI theme generation via cloud function
+- RAG-backed AI theme generation via cloud function
 - Current location and location context
 - Walk draft with mission checklist, note, photo, and route points
 - Save walk record to cloud database
@@ -35,6 +35,14 @@ Implemented as stubs ready for deployment:
 - `createWalk`
 - `listMyWalks`
 - `listPublicWalks`
+
+## Lightweight RAG
+
+`generateTheme` now uses a lightweight RAG layer before calling Gemini:
+- retrieve matching scene profiles from location and preference keywords
+- retrieve mission templates for color, texture, shape, sound, and city-life exploration
+- inject retrieved context into the prompt
+- fall back to retrieved template-based missions when Gemini is unavailable
 
 ## Notes
 
