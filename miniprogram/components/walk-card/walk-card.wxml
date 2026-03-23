@@ -1,0 +1,13 @@
+<view wx:if="{{walk}}" class="walk-card" style="padding: 28rpx; margin-bottom: 20rpx;">
+  <view style="display: flex; justify-content: space-between; gap: 20rpx; margin-bottom: 16rpx;">
+    <view style="font-size: 32rpx; font-weight: 600; flex: 1;">{{walk.themeTitle}}</view>
+    <view class="meta-pill">{{walk.isPublic ? '公开' : '私密'}}</view>
+  </view>
+  <view class="meta-row" style="margin-bottom: 16rpx;">
+    <view class="meta-pill">{{walk.locationName || '未知地点'}}</view>
+    <view class="meta-pill">{{walk.routePoints ? walk.routePoints.length : 0}} 个轨迹点</view>
+  </view>
+  <view wx:if="{{walk.noteText}}" style="color: #6f6a5f; line-height: 1.6; margin-bottom: 16rpx;">{{walk.noteText}}</view>
+  <image wx:if="{{walk.coverImage}}" src="{{walk.coverImage}}" mode="aspectFill" style="width: 100%; height: 280rpx; border-radius: 20rpx; margin-bottom: 16rpx;" />
+  <view style="font-size: 22rpx; color: #8f897e;">{{walk.createdAtLabel || walk.createdAt}}</view>
+</view>

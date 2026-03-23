@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "社区",
+  "usingComponents": {
+    "walk-card": "/components/walk-card/walk-card"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "我的足迹",
+  "usingComponents": {
+    "walk-card": "/components/walk-card/walk-card"
+  }
+}

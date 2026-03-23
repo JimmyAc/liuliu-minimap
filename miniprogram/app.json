@@ -1,0 +1,42 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/record/record",
+    "pages/feed/feed",
+    "pages/history/history",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTitleText": "城市漫步者",
+    "navigationBarBackgroundColor": "#f5f2ed",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f2ed",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#6f6a5f",
+    "selectedColor": "#5a5a40",
+    "backgroundColor": "#fcfaf6",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "探索"
+      },
+      {
+        "pagePath": "pages/feed/feed",
+        "text": "社区"
+      },
+      {
+        "pagePath": "pages/history/history",
+        "text": "足迹"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

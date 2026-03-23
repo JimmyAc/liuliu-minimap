@@ -1,0 +1,13 @@
+<view class="page-shell">
+  <view class="hero-card" style="padding: 28rpx; margin-bottom: 24rpx;">
+    <view class="section-title">我的足迹</view>
+    <view class="section-subtitle">已保存的个人漫步记录会出现在这里。</view>
+  </view>
+
+  <view wx:if="{{!loading && walks.length}}">
+    <walk-card wx:for="{{walks}}" wx:key="_id" walk="{{item}}" />
+  </view>
+
+  <view wx:elif="{{loading}}" class="empty-copy">正在加载你的足迹...</view>
+  <view wx:else class="empty-copy">还没有保存的漫步记录。</view>
+</view>

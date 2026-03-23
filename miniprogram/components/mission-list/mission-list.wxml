@@ -1,0 +1,10 @@
+<view>
+  <view wx:for="{{missions}}" wx:key="index" class="mission-card" style="padding: 22rpx; margin-bottom: 14rpx;" bindtap="toggleMission" data-mission="{{item}}">
+    <view style="display: flex; align-items: center; justify-content: space-between; gap: 16rpx;">
+      <view style="flex: 1; color: {{completedMissions.includes(item) ? '#8f897e' : '#1a1a1a'}}; text-decoration: {{completedMissions.includes(item) ? 'line-through' : 'none'}};">
+        {{item}}
+      </view>
+      <view class="meta-pill">{{completedMissions.includes(item) ? '已完成' : '待打卡'}}</view>
+    </view>
+  </view>
+</view>

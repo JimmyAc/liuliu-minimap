@@ -1,0 +1,50 @@
+<view class="page-shell">
+  <view class="hero-card" style="padding: 32rpx; margin-bottom: 24rpx;">
+    <view class="section-title">城市漫步者</view>
+    <view class="section-subtitle">把现有 Web 版的 AI 漫步生成逻辑迁到微信小程序的第一版 MVP。</view>
+  </view>
+
+  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
+    <view class="field-label">当前位置与探索区域</view>
+    <view class="meta-row" style="margin-bottom: 18rpx;">
+      <view class="meta-pill">{{locationName}}</view>
+      <view class="meta-pill">{{locationContext}}</view>
+    </view>
+    <view style="display: flex; gap: 16rpx;">
+      <button class="ghost-btn" bindtap="useCurrentLocation" style="flex: 1;">使用当前位置</button>
+      <button class="ghost-btn" bindtap="handleChooseLocation" style="flex: 1;">手动选点</button>
+    </view>
+  </view>
+
+  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
+    <view class="field-label">当前心情</view>
+    <view class="pill-row" style="margin-bottom: 24rpx;">
+      <view wx:for="{{moodOptions}}" wx:key="item" class="{{mood === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="mood" data-value="{{item}}">{{item}}</view>
+    </view>
+
+    <view class="field-label">天气环境</view>
+    <view class="pill-row" style="margin-bottom: 24rpx;">
+      <view wx:for="{{weatherOptions}}" wx:key="item" class="{{weather === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="weather" data-value="{{item}}">{{item}}</view>
+    </view>
+
+    <view class="field-label">季节选择</view>
+    <view class="pill-row" style="margin-bottom: 24rpx;">
+      <view wx:for="{{seasonOptions}}" wx:key="item" class="{{season === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="season" data-value="{{item}}">{{item}}</view>
+    </view>
+
+    <view class="field-label">散步偏好</view>
+    <view class="pill-row" style="margin-bottom: 24rpx;">
+      <view wx:for="{{preferenceOptions}}" wx:key="item" class="{{preference === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="preference" data-value="{{item}}">{{item}}</view>
+    </view>
+
+    <view class="field-label">模式</view>
+    <view class="pill-row">
+      <view class="{{walkMode === 'pure' ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="walkMode" data-value="pure">纯粹模式</view>
+      <view class="{{walkMode === 'advanced' ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="walkMode" data-value="advanced">进阶模式</view>
+    </view>
+  </view>
+
+  <button class="primary-btn" bindtap="handleGenerateTheme" loading="{{isGenerating}}" style="margin-bottom: 24rpx;">AI 生成漫步主题</button>
+
+  <theme-card theme="{{currentTheme}}" bind:start="handleStartWalk" />
+</view>

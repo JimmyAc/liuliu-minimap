@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "记录漫步",
+  "usingComponents": {
+    "mission-list": "/components/mission-list/mission-list"
+  }
+}

@@ -1,0 +1,131 @@
+page {
+  background: #f5f2ed;
+  color: #1a1a1a;
+  font-size: 28rpx;
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: 32rpx;
+  box-sizing: border-box;
+}
+
+.hero-card,
+.section-card,
+.theme-card,
+.walk-card,
+.mission-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1rpx solid #e8e2d6;
+  border-radius: 28rpx;
+  box-shadow: 0 12rpx 32rpx rgba(33, 28, 18, 0.06);
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.section-subtitle {
+  color: #6f6a5f;
+  font-size: 24rpx;
+}
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.pill,
+.pill-active {
+  padding: 14rpx 24rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+}
+
+.pill {
+  background: #ede8de;
+  color: #4f4a40;
+}
+
+.pill-active {
+  background: #5a5a40;
+  color: #fff;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.danger-btn {
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  line-height: 1;
+  padding: 24rpx 28rpx;
+}
+
+.primary-btn {
+  background: #5a5a40;
+  color: #fff;
+}
+
+.secondary-btn {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.ghost-btn {
+  background: #ede8de;
+  color: #1a1a1a;
+}
+
+.danger-btn {
+  background: #b74d42;
+  color: #fff;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 12rpx;
+  font-size: 22rpx;
+  color: #6f6a5f;
+}
+
+.text-input,
+.text-area {
+  width: 100%;
+  background: #fff;
+  border-radius: 22rpx;
+  border: 1rpx solid #e8e2d6;
+  box-sizing: border-box;
+}
+
+.text-input {
+  padding: 22rpx 24rpx;
+}
+
+.text-area {
+  min-height: 180rpx;
+  padding: 24rpx;
+}
+
+.empty-copy {
+  text-align: center;
+  padding: 72rpx 24rpx;
+  color: #7f7a6f;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.meta-pill {
+  background: #f5f2ed;
+  color: #6f6a5f;
+  border-radius: 999rpx;
+  padding: 10rpx 18rpx;
+  font-size: 22rpx;
+}

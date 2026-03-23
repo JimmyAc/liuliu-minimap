@@ -1,0 +1,13 @@
+<view class="page-shell">
+  <view class="hero-card" style="padding: 28rpx; margin-bottom: 24rpx;">
+    <view class="section-title">社区漫步足迹</view>
+    <view class="section-subtitle">这里展示公开发布的城市漫步记录。</view>
+  </view>
+
+  <view wx:if="{{!loading && walks.length}}">
+    <walk-card wx:for="{{walks}}" wx:key="_id" walk="{{item}}" />
+  </view>
+
+  <view wx:elif="{{loading}}" class="empty-copy">正在加载社区内容...</view>
+  <view wx:else class="empty-copy">还没有公开的漫步记录。</view>
+</view>
