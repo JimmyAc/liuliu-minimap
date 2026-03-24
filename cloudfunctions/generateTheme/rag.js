@@ -1,5 +1,21 @@
 const { missionTemplates, preferenceBias, sceneProfiles } = require('./knowledge');
 
+function shuffle(list) {
+  const copied = [...list];
+  for (let index = copied.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copied[index], copied[swapIndex]] = [copied[swapIndex], copied[index]];
+  }
+  return copied;
+}
+
+function pickOne(list, fallback) {
+  if (!list || !list.length) {
+    return fallback;
+  }
+  return list[Math.floor(Math.random() * list.length)];
+}
+
 function tokenize(parts) {
   return parts
     .filter(Boolean)
@@ -79,25 +95,25 @@ function retrieveContext(event) {
     .map((scene) => ({ scene, score: scoreScene(scene, tokens, event.preference) }))
     .sort((left, right) => right.score - left.score);
 
-  const topScenes = rankedScenes.filter((item) => item.score > 0).slice(0, 2).map((item) => item.scene);
+  const topScenes = rankedScenes.filter((item) => item.score > 0).slice(0, 3).map((item) => item.scene);
   const fallbackScenes = topScenes.length ? topScenes : [sceneProfiles[0]];
-  const categories = chooseCategories(event, fallbackScenes[0]);
+  const categories = shuffle(chooseCategories(event, fallbackScenes[0])).slice(0, 3);
 
-  const retrievedTemplates = missionTemplates
+  const retrievedTemplates = shuffle(missionTemplates)
     .filter((template) => categories.includes(template.category))
     .slice(0, 4);
 
   const referenceMissions = retrievedTemplates.map((template) => ({
     category: template.category,
-    cues: template.cues,
-    samples: template.templates.slice(0, event.walkMode === 'advanced' ? 2 : 1),
+    cues: shuffle(template.cues).slice(0, 2),
+    samples: shuffle(template.templates).slice(0, event.walkMode === 'advanced' ? 2 : 1),
   }));
 
   return {
-    scenes: fallbackScenes.map((scene) => ({
+    scenes: shuffle(fallbackScenes).slice(0, 2).map((scene) => ({
       id: scene.id,
       labels: scene.labels,
-      missionHints: scene.missionHints,
+      missionHints: shuffle(scene.missionHints).slice(0, 3),
       categories: scene.categories,
     })),
     categories,
@@ -107,17 +123,36 @@ function retrieveContext(event) {
 
 function buildFallbackTheme(event, ragContext) {
   const missionsNeeded = event.walkMode === 'advanced' ? 3 : 1;
-  const missionPool = ragContext.referenceMissions.flatMap((item) => item.samples);
+  const missionPool = shuffle(ragContext.referenceMissions.flatMap((item) => item.samples));
   const missions = missionPool.slice(0, missionsNeeded);
-  const primaryCategory = ragContext.categories[0] || '探索';
-  const sceneLabel = ragContext.scenes[0] ? ragContext.scenes[0].labels.join(' / ') : '城市街道';
+  const primaryCategory = pickOne(ragContext.categories, '探索');
+  const leadScene = pickOne(ragContext.scenes, null);
+  const sceneLabel = leadScene ? leadScene.labels.join(' / ') : '城市街道';
+  const titleTemplates = [
+    `${event.locationName || '城市一角'}的${primaryCategory}漫步`,
+    `${event.locationName || '这片街区'}观察练习：${primaryCategory}`,
+    `${primaryCategory}散策：重新看见${event.locationName || '身边角落'}`,
+  ];
+  const descriptionTemplates = [
+    `围绕 ${sceneLabel} 展开一场更贴近在地细节的城市观察。`,
+    `请沿着 ${sceneLabel} 的气质慢慢走，用更具体的目光捕捉今日线索。`,
+    `把 ${sceneLabel} 当作今天的提示词，在熟悉街区里寻找新的感官入口。`,
+  ];
+  const vibeColors = {
+    '声音': ['#52708a', '#4d6b78', '#648692'],
+    '纹理': ['#8a6a52', '#7a614f', '#9b785b'],
+    '色彩': ['#5a5a40', '#6b7c59', '#906f4f'],
+    '形状': ['#5e6f86', '#627b75', '#7c6a94'],
+    '城市': ['#80624a', '#6e5a49', '#8d7458'],
+    '探索': ['#5a5a40', '#6f6a5f', '#52708a'],
+  };
 
   return {
-    title: `${event.locationName || '城市一角'}的${primaryCategory}漫步`,
-    description: `围绕 ${sceneLabel} 展开一场更贴近在地细节的城市观察。`,
+    title: pickOne(titleTemplates, `${event.locationName || '城市一角'}的${primaryCategory}漫步`),
+    description: pickOne(descriptionTemplates, `围绕 ${sceneLabel} 展开一场更贴近在地细节的城市观察。`),
     category: primaryCategory,
     missions: missions.length ? missions : ['寻找一个让你驻足的细节'],
-    vibeColor: primaryCategory === '声音' ? '#52708a' : primaryCategory === '纹理' ? '#8a6a52' : '#5a5a40',
+    vibeColor: pickOne(vibeColors[primaryCategory], '#5a5a40'),
   };
 }
 

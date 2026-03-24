@@ -8,6 +8,7 @@ The current implementation uses a lightweight RAG strategy instead of a vector d
 - avoids frontend API key exposure
 - gives more grounded tasks than direct prompt-only generation
 - still works when Gemini is unavailable
+- works with mainland-friendly OpenAI-compatible model providers
 
 ## Retrieval assets
 

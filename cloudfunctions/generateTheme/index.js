@@ -1,51 +1,31 @@
 const cloud = require('wx-server-sdk');
-const { GoogleGenAI, Type } = require('@google/genai');
+const { chatJson } = require('./ai');
 const { retrieveContext, buildFallbackTheme, buildPrompt } = require('./rag');
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
+const includeDebugContext = process.env.DEBUG_RAG_CONTEXT === 'true';
+
 exports.main = async (event) => {
   const ragContext = retrieveContext(event);
   const fallbackTheme = buildFallbackTheme(event, ragContext);
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return { theme: fallbackTheme, source: 'rag-fallback', ragContext, reason: 'missing_api_key' };
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
   const prompt = buildPrompt(event, ragContext);
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            description: { type: Type.STRING },
-            category: { type: Type.STRING },
-            missions: { type: Type.ARRAY, items: { type: Type.STRING } },
-            vibeColor: { type: Type.STRING },
-          },
-          required: ['title', 'description', 'category', 'missions', 'vibeColor'],
-        },
-      },
-    });
-
-    const theme = JSON.parse(response.text || '{}');
+    const theme = await chatJson(
+      '你是遛遛小程序的城市漫步策划助手。只返回合法 JSON，不要输出额外解释。',
+      prompt
+    );
     return {
       theme: { ...fallbackTheme, ...theme },
       source: 'rag+ai',
-      ragContext,
+      ragContext: includeDebugContext ? ragContext : undefined,
     };
   } catch (error) {
     return {
       theme: fallbackTheme,
       source: 'rag-fallback',
-      ragContext,
+      ragContext: includeDebugContext ? ragContext : undefined,
       reason: error.message || 'generate_failed',
     };
   }

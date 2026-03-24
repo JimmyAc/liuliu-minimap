@@ -38,14 +38,20 @@ Implemented as stubs ready for deployment:
 
 ## Lightweight RAG
 
-`generateTheme` now uses a lightweight RAG layer before calling Gemini:
+`generateTheme` now uses a lightweight RAG layer before calling AI:
 - retrieve matching scene profiles from location and preference keywords
 - retrieve mission templates for color, texture, shape, sound, and city-life exploration
 - inject retrieved context into the prompt
-- fall back to retrieved template-based missions when Gemini is unavailable
+- fall back to retrieved template-based missions when the AI provider is unavailable or slow
 
 ## Notes
 
-- Gemini calls are server-side only. Put your API key in cloud function env or secure config.
+- AI calls are server-side only. Recommended mainland-friendly setup uses an OpenAI-compatible provider such as DashScope, DeepSeek, or SiliconFlow.
+- Configure these cloud function environment variables for `generateTheme` and `getLocationContext`:
+  - `AI_API_KEY`
+  - `AI_BASE_URL` (example: `https://dashscope.aliyuncs.com/compatible-mode/v1`)
+  - `AI_CHAT_MODEL` (example: `qwen-turbo` for faster response, `qwen-plus` for better quality)
+  - `AI_REQUEST_TIMEOUT_MS` (optional, default fast-fail timeout to avoid cloud function 3s timeout)
+  - `DEBUG_RAG_CONTEXT` (optional, set `true` only when you want verbose logs)
 - The first version uses JavaScript for the fastest setup path.
 - Audio/video, community theme submission, and share poster generation are intentionally left for phase 2.

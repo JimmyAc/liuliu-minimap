@@ -1,6 +1,6 @@
 const app = getApp();
 const { PRESET_THEMES, MOODS, WEATHERS, SEASONS, PREFERENCES } = require('../../utils/constants');
-const { chooseLocation, getCurrentLocation } = require('../../utils/location');
+const { chooseLocation, explainLocationError, getCurrentLocation } = require('../../utils/location');
 const { generateTheme, getLocationContext } = require('../../services/theme');
 
 Page({
@@ -46,7 +46,7 @@ Page({
         locationContext: contextResponse.context || '城市街道',
       });
     } catch (error) {
-      wx.showToast({ title: '定位失败', icon: 'none' });
+      wx.showToast({ title: explainLocationError(error, '定位'), icon: 'none', duration: 2500 });
     } finally {
       wx.hideLoading();
     }
@@ -71,7 +71,7 @@ Page({
       if (error && error.errMsg && error.errMsg.includes('cancel')) {
         return;
       }
-      wx.showToast({ title: '选点失败', icon: 'none' });
+      wx.showToast({ title: explainLocationError(error, '选点'), icon: 'none', duration: 2500 });
     } finally {
       wx.hideLoading();
     }
