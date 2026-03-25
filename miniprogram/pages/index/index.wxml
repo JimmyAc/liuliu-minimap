@@ -5,6 +5,16 @@
   </view>
 
   <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
+    <view class="section-title">展示栏</view>
+    <view class="meta-row" style="margin-bottom: 16rpx;">
+      <view class="meta-pill">{{displayTag}}</view>
+      <view class="meta-pill">{{walkMode === 'advanced' ? '进阶模式' : '纯粹模式'}}</view>
+      <view class="meta-pill">{{currentTheme ? currentTheme.missions.length : 0}} 个任务</view>
+    </view>
+    <view style="font-size: 24rpx; color: #6f6a5f; line-height: 1.7;">{{displaySummary}}</view>
+  </view>
+
+  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
     <view class="field-label">当前位置与探索区域</view>
     <view class="meta-row" style="margin-bottom: 18rpx;">
       <view class="meta-pill">{{locationName}}</view>
@@ -42,9 +52,24 @@
       <view class="{{walkMode === 'pure' ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="walkMode" data-value="pure">纯粹模式</view>
       <view class="{{walkMode === 'advanced' ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="walkMode" data-value="advanced">进阶模式</view>
     </view>
+    <view style="font-size: 22rpx; color: #7f7a6f; line-height: 1.7; margin-top: 16rpx;">
+      {{walkMode === 'advanced' ? '进阶模式会生成 3 个任务，更适合完整打卡与 AI 核验。' : '纯粹模式会只保留 1 个任务，更自由、更轻量。'}}
+    </view>
   </view>
 
   <button class="primary-btn" bindtap="handleGenerateTheme" loading="{{isGenerating}}" style="margin-bottom: 24rpx;">AI 生成漫步主题</button>
+
+  <view style="display: flex; gap: 16rpx; margin-bottom: 24rpx;">
+    <button class="ghost-btn" bindtap="handleRandomTheme" loading="{{isGenerating}}" style="flex: 1;">随机主题</button>
+    <button class="ghost-btn" bindtap="handleCombinedTheme" loading="{{isCombining}}" style="flex: 1;">组合主题</button>
+  </view>
+
+  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
+    <view class="field-label">组合方向（至少选 2 个）</view>
+    <view class="pill-row">
+      <view wx:for="{{combineOptionViews}}" wx:key="label" class="{{item.active ? 'pill-active' : 'pill'}}" bindtap="toggleCombineSelection" data-value="{{item.label}}">{{item.label}}</view>
+    </view>
+  </view>
 
   <theme-card theme="{{currentTheme}}" bind:start="handleStartWalk" />
 </view>

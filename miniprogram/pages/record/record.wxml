@@ -10,7 +10,17 @@
 
   <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
     <view class="section-title">任务打卡</view>
-    <mission-list missions="{{theme.missions}}" completedMissions="{{draft.completedMissions}}" bind:toggle="toggleMission" />
+    <mission-list missions="{{theme.missions}}" activeMission="{{activeMission}}" completedMissions="{{draft.completedMissions}}" missionReviews="{{draft.missionReviews}}" bind:select="selectMission" bind:verify="handleMissionVerify" />
+  </view>
+
+  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
+    <view class="section-title">当前核验任务</view>
+    <view class="meta-row" style="margin-bottom: 16rpx;">
+      <view class="meta-pill">{{activeMission || '未选择任务'}}</view>
+      <view class="meta-pill">{{draft.walkMode === 'advanced' ? '进阶模式' : '纯粹模式'}}</view>
+    </view>
+    <view style="font-size: 24rpx; color: #6f6a5f; line-height: 1.7; margin-bottom: 20rpx;">上传图片并填写简短备注后，AI 会宽松判断是否完成任务，无论通过与否都会返回一句评价。</view>
+    <button class="primary-btn" bindtap="verifyActiveMission" loading="{{isVerifyingMission}}">核验当前任务</button>
   </view>
 
   <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
@@ -32,7 +42,8 @@
 
   <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
     <view class="section-title">图片记录</view>
-    <button class="ghost-btn" bindtap="choosePhoto" style="margin-bottom: 20rpx;">拍照或从相册选择</button>
+    <view style="font-size: 24rpx; color: #6f6a5f; margin-bottom: 16rpx;">支持一次多选，当前素材会用于当前任务的 AI 核验与整次漫步记录。</view>
+    <button class="ghost-btn" bindtap="choosePhoto" style="margin-bottom: 20rpx;">拍照或从相册多选</button>
     <scroll-view scroll-x>
       <view style="display: flex; gap: 16rpx;">
         <view wx:for="{{draft.photoList}}" wx:key="index" style="position: relative;">
@@ -45,7 +56,7 @@
 
   <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
     <view class="section-title">文字记录</view>
-    <textarea class="text-area" placeholder="记录此刻的观察和想法..." value="{{draft.noteText}}" bindinput="handleNoteInput" maxlength="300" />
+    <textarea class="text-area" placeholder="补充当前任务的备注、你的观察，或让 AI 更容易理解这组照片..." value="{{draft.noteText}}" bindinput="handleNoteInput" maxlength="300" />
   </view>
 
   <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">

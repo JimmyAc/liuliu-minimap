@@ -37,35 +37,36 @@ function showModal(options) {
 }
 
 async function ensureLocationPermission() {
+  const scope = 'scope.userLocation';
   const setting = await getSetting();
-  const current = setting.authSetting['scope.userLocation'];
+  const current = setting.authSetting[scope];
 
-  if (current === true || current === undefined) {
+  if (current === true) {
+    return true;
+  }
+
+  if (current === undefined) {
     try {
-      await authorize('scope.userLocation');
+      await authorize(scope);
       return true;
     } catch (error) {
-      if (current === true) {
-        return true;
-      }
+      // Continue to openSetting flow below.
     }
   }
 
-  if (current === false) {
-    const modal = await showModal({
-      title: '需要定位权限',
-      content: '遛遛需要定位权限来获取当前位置、手动选点和记录漫步轨迹。是否前往设置开启？',
-      confirmText: '去设置',
-    });
+  const modal = await showModal({
+    title: '需要定位权限',
+    content: '遛遛需要定位权限来获取当前位置、手动选点和记录漫步轨迹。是否前往设置开启？',
+    confirmText: '去设置',
+  });
 
-    if (!modal.confirm) {
-      throw new Error('location_permission_denied');
-    }
+  if (!modal.confirm) {
+    throw new Error('location_permission_denied');
+  }
 
-    const nextSetting = await openSetting();
-    if (nextSetting.authSetting['scope.userLocation']) {
-      return true;
-    }
+  const nextSetting = await openSetting();
+  if (nextSetting.authSetting[scope]) {
+    return true;
   }
 
   throw new Error('location_permission_denied');

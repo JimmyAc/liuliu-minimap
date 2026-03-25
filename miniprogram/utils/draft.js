@@ -8,10 +8,13 @@ function getDefaultDraft() {
     longitude: null,
     routePoints: [],
     completedMissions: [],
+    missionReviews: {},
     noteText: '',
     photoList: [],
     isPublic: true,
     startedAt: null,
+    walkMode: 'pure',
+    generationSource: 'preset',
   };
 }
 

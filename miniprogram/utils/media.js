@@ -1,7 +1,7 @@
-function chooseImage() {
+function chooseImage(count = 9) {
   return new Promise((resolve, reject) => {
     wx.chooseMedia({
-      count: 1,
+      count,
       mediaType: ['image'],
       sourceType: ['camera', 'album'],
       success: resolve,

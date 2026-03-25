@@ -22,6 +22,10 @@ const PRESET_THEMES = [
   },
 ];
 
+const RANDOM_THEME_CATEGORIES = ['形状漫步', '色彩漫步', '声音漫步', '纹理漫步', '市井漫步', '自然漫步'];
+
+const COMBINE_THEME_OPTIONS = ['形状', '颜色', '声音', '纹理', '动物', '气味', '城市'];
+
 const MOODS = ['好奇', '平静', '活力', '怀旧'];
 const WEATHERS = ['晴朗', '多云', '雨天', '大风'];
 const SEASONS = ['春季', '夏季', '秋季', '冬季'];
@@ -29,6 +33,8 @@ const PREFERENCES = ['人文历史', '自然景观', '市井生活'];
 
 module.exports = {
   PRESET_THEMES,
+  RANDOM_THEME_CATEGORIES,
+  COMBINE_THEME_OPTIONS,
   MOODS,
   WEATHERS,
   SEASONS,

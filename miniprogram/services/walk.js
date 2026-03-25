@@ -12,8 +12,13 @@ function listPublicWalks(payload = {}) {
   return callCloud('listPublicWalks', payload);
 }
 
+function getWalkDetail(payload = {}) {
+  return callCloud('getWalkDetail', payload);
+}
+
 module.exports = {
   createWalk,
+  getWalkDetail,
   listMyWalks,
   listPublicWalks,
 };

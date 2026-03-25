@@ -26,4 +26,12 @@ Page({
       this.setData({ loading: false });
     }
   },
+
+  openDetail(event) {
+    const id = event.detail.id;
+    if (!id) {
+      return;
+    }
+    wx.navigateTo({ url: `/pages/walk-detail/walk-detail?id=${id}&source=feed` });
+  },
 });

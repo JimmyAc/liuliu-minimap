@@ -15,10 +15,13 @@ exports.main = async (event) => {
     locationContext: event.locationContext || '城市街道',
     routePoints: event.routePoints || [],
     missionsCompleted: event.missionsCompleted || [],
+    missionReviews: event.missionReviews || {},
     photoList: event.photoList || [],
     coverImage: (event.photoList || [])[0] || '',
     noteText: event.noteText || '',
     isPublic: !!event.isPublic,
+    walkMode: event.walkMode || 'pure',
+    generationSource: event.generationSource || 'unknown',
     createdAt: Date.now(),
   };
 

@@ -45,6 +45,42 @@ function requestJson(urlString, options, body) {
   });
 }
 
+function requestText(urlString, options = {}) {
+  const url = new URL(urlString);
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      {
+        protocol: url.protocol,
+        hostname: url.hostname,
+        port: url.port || undefined,
+        path: `${url.pathname}${url.search}`,
+        method: options.method || 'GET',
+        headers: options.headers,
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          if (res.statusCode >= 400) {
+            reject(new Error(`http_${res.statusCode}`));
+            return;
+          }
+          resolve(data);
+        });
+      }
+    );
+
+    req.on('error', reject);
+    req.setTimeout(REQUEST_TIMEOUT_MS, () => {
+      req.destroy(new Error(`ai_request_timeout_${REQUEST_TIMEOUT_MS}ms`));
+    });
+    req.end();
+  });
+}
+
 function parseAssistantText(payload) {
   return payload && payload.choices && payload.choices[0] && payload.choices[0].message
     ? payload.choices[0].message.content || ''
@@ -89,4 +125,5 @@ async function chatText(systemPrompt, userPrompt) {
 module.exports = {
   chatText,
   getAiConfig,
+  requestText,
 };

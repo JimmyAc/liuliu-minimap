@@ -2,11 +2,14 @@ const app = getApp();
 const { createWalk } = require('../../services/walk');
 const { getCurrentLocation } = require('../../utils/location');
 const { chooseImage } = require('../../utils/media');
+const { verifyMission } = require('../../services/theme');
 
 let routeTimer = null;
 
 Page({
   data: {
+    activeMission: '',
+    isVerifyingMission: false,
     theme: null,
     draft: null,
     isTracking: false,
@@ -23,20 +26,43 @@ Page({
 
   refreshState() {
     this.setData({
+      activeMission: this.data.activeMission || ((app.globalData.currentTheme && app.globalData.currentTheme.missions && app.globalData.currentTheme.missions[0]) || ''),
       theme: app.globalData.currentTheme,
       draft: app.globalData.walkDraft,
     });
   },
 
-  toggleMission(event) {
+  selectMission(event) {
     const mission = event.detail.mission;
-    const completed = new Set(this.data.draft.completedMissions);
-    if (completed.has(mission)) {
-      completed.delete(mission);
-    } else {
-      completed.add(mission);
+    this.setData({ activeMission: mission });
+  },
+
+  async handleMissionVerify(event) {
+    const mission = event.detail.mission || this.data.activeMission;
+    if (mission) {
+      this.setData({ activeMission: mission });
     }
-    const draft = { ...this.data.draft, completedMissions: Array.from(completed) };
+    await this.verifyActiveMission();
+  },
+
+  markMissionPassed(mission, review) {
+    const completed = new Set(this.data.draft.completedMissions);
+    completed.add(mission);
+    const missionReviews = {
+      ...(this.data.draft.missionReviews || {}),
+      [mission]: review,
+    };
+    const draft = { ...this.data.draft, completedMissions: Array.from(completed), missionReviews };
+    app.setWalkDraft(draft);
+    this.refreshState();
+  },
+
+  saveMissionReview(mission, review) {
+    const missionReviews = {
+      ...(this.data.draft.missionReviews || {}),
+      [mission]: review,
+    };
+    const draft = { ...this.data.draft, missionReviews };
     app.setWalkDraft(draft);
     this.refreshState();
   },
@@ -55,9 +81,9 @@ Page({
 
   async choosePhoto() {
     try {
-      const result = await chooseImage();
-      const photoPath = result.tempFiles[0].tempFilePath;
-      const draft = { ...this.data.draft, photoList: [...this.data.draft.photoList, photoPath] };
+      const result = await chooseImage(9);
+      const photoPaths = (result.tempFiles || []).map((item) => item.tempFilePath).filter(Boolean);
+      const draft = { ...this.data.draft, photoList: [...this.data.draft.photoList, ...photoPaths] };
       app.setWalkDraft(draft);
       this.refreshState();
     } catch (error) {
@@ -65,6 +91,46 @@ Page({
         return;
       }
       wx.showToast({ title: '选择图片失败', icon: 'none' });
+    }
+  },
+
+  async verifyActiveMission() {
+    const mission = this.data.activeMission;
+    if (!mission) {
+      wx.showToast({ title: '先选择一个任务', icon: 'none' });
+      return;
+    }
+
+    if (!this.data.draft.photoList.length) {
+      wx.showToast({ title: '请先上传图片再核验', icon: 'none' });
+      return;
+    }
+
+    this.setData({ isVerifyingMission: true });
+    try {
+      const uploadedPhotos = await Promise.all(this.data.draft.photoList.map((path) => this.uploadPhoto(path)));
+      const review = await verifyMission({
+        mission,
+        noteText: this.data.draft.noteText,
+        fileIDs: uploadedPhotos,
+      });
+      const nextReview = {
+        passed: !!review.passed,
+        comment: review.comment,
+        confidence: review.confidence || 'medium',
+        reviewedAt: review.reviewedAt || Date.now(),
+        photoList: uploadedPhotos,
+      };
+      if (review.passed) {
+        this.markMissionPassed(mission, nextReview);
+      } else {
+        this.saveMissionReview(mission, nextReview);
+      }
+      wx.showToast({ title: review.passed ? '核验通过' : '已给出建议', icon: 'none' });
+    } catch (error) {
+      wx.showToast({ title: '核验失败', icon: 'none' });
+    } finally {
+      this.setData({ isVerifyingMission: false });
     }
   },
 
@@ -133,9 +199,12 @@ Page({
         locationContext: this.data.draft.locationContext,
         routePoints: this.data.draft.routePoints,
         missionsCompleted: this.data.draft.completedMissions,
+        missionReviews: this.data.draft.missionReviews,
         photoList: uploadedPhotos,
         noteText: this.data.draft.noteText,
         isPublic: this.data.draft.isPublic,
+        walkMode: this.data.draft.walkMode,
+        generationSource: this.data.draft.generationSource,
       });
       this.stopTracking();
       app.clearWalkDraft();
@@ -154,6 +223,9 @@ Page({
   },
 
   uploadPhoto(filePath) {
+    if (String(filePath).startsWith('cloud://')) {
+      return Promise.resolve(filePath);
+    }
     const cloudPath = `walks/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
     return wx.cloud.uploadFile({ cloudPath, filePath }).then((response) => response.fileID);
   },

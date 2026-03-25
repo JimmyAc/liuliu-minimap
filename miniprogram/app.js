@@ -27,5 +27,6 @@ App({
 
   clearWalkDraft() {
     this.globalData.walkDraft = loadDraft(true);
+    saveDraft(this.globalData.walkDraft);
   },
 });

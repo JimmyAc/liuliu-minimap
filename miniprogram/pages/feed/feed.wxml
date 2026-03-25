@@ -5,7 +5,7 @@
   </view>
 
   <view wx:if="{{!loading && walks.length}}">
-    <walk-card wx:for="{{walks}}" wx:key="_id" walk="{{item}}" />
+    <walk-card wx:for="{{walks}}" wx:key="_id" walk="{{item}}" bind:open="openDetail" />
   </view>
 
   <view wx:elif="{{loading}}" class="empty-copy">正在加载社区内容...</view>
