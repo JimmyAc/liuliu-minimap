@@ -1,7 +1,7 @@
-const { callCloud } = require('./cloud');
+const { callApi } = require('./api');
 
 function syncUser(profile = {}) {
-  return callCloud('syncUser', { profile });
+  return callApi('syncUser', { profile });
 }
 
 module.exports = {

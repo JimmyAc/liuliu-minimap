@@ -1,0 +1,45 @@
+.mission-entry {
+  padding: 22rpx;
+  margin-bottom: 14rpx;
+  border: 1rpx solid #ece5d9;
+}
+
+.mission-entry-active {
+  border: 2rpx solid #5a5a40;
+}
+
+.mission-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 12rpx;
+}
+
+.mission-maintext {
+  flex: 1;
+  line-height: 1.7;
+}
+
+.mission-review {
+  font-size: 22rpx;
+  line-height: 1.6;
+  margin-bottom: 12rpx;
+}
+
+.mission-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.mission-tip {
+  font-size: 22rpx;
+  color: #7f7a6f;
+}
+
+.mission-buttons {
+  display: flex;
+  gap: 12rpx;
+}

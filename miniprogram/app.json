@@ -3,9 +3,10 @@
     "pages/index/index",
     "pages/record/record",
     "pages/walk-detail/walk-detail",
-    "pages/feed/feed",
     "pages/history/history",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/mapdebug/mapdebug",
+    "pages/feed/feed"
   ],
   "window": {
     "navigationBarTitleText": "城市漫步者",
@@ -31,10 +32,6 @@
       {
         "pagePath": "pages/index/index",
         "text": "探索"
-      },
-      {
-        "pagePath": "pages/feed/feed",
-        "text": "社区"
       },
       {
         "pagePath": "pages/history/history",

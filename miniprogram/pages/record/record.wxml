@@ -1,74 +1,111 @@
 <view class="page-shell" wx:if="{{theme && draft}}">
-  <view class="theme-card" style="padding: 28rpx; margin-bottom: 24rpx; border-top: 10rpx solid {{theme.vibeColor || '#5a5a40'}};">
-    <view style="font-size: 38rpx; font-weight: 600; margin-bottom: 14rpx;">{{theme.title}}</view>
-    <view style="color: #6f6a5f; line-height: 1.7; margin-bottom: 16rpx;">{{theme.description}}</view>
-    <view class="meta-row">
-      <view class="meta-pill">{{draft.locationName}}</view>
-      <view class="meta-pill">{{draft.locationContext}}</view>
+  <view class="theme-card record-hero" style="border-top: 10rpx solid {{theme.vibeColor || '#5a5a40'}};">
+    <view class="record-stage" style="background: linear-gradient(135deg, {{theme.vibeColor || '#5a5a40'}} 0%, #f1eadf 100%);">
+      <view class="record-stage-glyph">{{theme.displayGlyph || '遛'}}</view>
+      <view class="record-stage-copy">
+        <view class="record-stage-title">{{theme.title}}</view>
+        <view class="record-stage-desc">{{theme.description}}</view>
+      </view>
+    </view>
+    <view class="record-body">
+      <view class="meta-row">
+        <view class="meta-pill">{{draft.locationName}}</view>
+        <view class="meta-pill">{{draft.walkMode === 'advanced' ? '进阶模式' : '纯粹模式'}}</view>
+        <view class="meta-pill">{{draft.completedMissions.length}} / {{theme.missions.length}} 已完成</view>
+      </view>
     </view>
   </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
+  <view class="section-card section-block">
     <view class="section-title">任务打卡</view>
-    <mission-list missions="{{theme.missions}}" activeMission="{{activeMission}}" completedMissions="{{draft.completedMissions}}" missionReviews="{{draft.missionReviews}}" bind:select="selectMission" bind:verify="handleMissionVerify" />
+    <view class="section-subtitle">点任务可切换当前目标，打卡时可直接勾选完成，也可走 AI 图文核验。</view>
+    <mission-list missions="{{theme.missions}}" activeMission="{{activeMission}}" completedMissions="{{draft.completedMissions}}" missionReviews="{{draft.missionReviews}}" bind:select="selectMission" bind:verify="handleMissionVerify" bind:toggle="toggleMissionDone" />
   </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <view class="section-title">当前核验任务</view>
-    <view class="meta-row" style="margin-bottom: 16rpx;">
-      <view class="meta-pill">{{activeMission || '未选择任务'}}</view>
-      <view class="meta-pill">{{draft.walkMode === 'advanced' ? '进阶模式' : '纯粹模式'}}</view>
+  <view class="section-card section-block">
+    <view class="section-heading">
+      <view>
+        <view class="section-title">记录与追踪</view>
+        <view class="section-subtitle">{{isMapOpen ? '地图已展开，可开始或停止追踪。' : '当前展示任务记录面板，再点一次可切回地图。'}}</view>
+      </view>
+      <button class="ghost-btn mini-action" bindtap="toggleMapPanel">{{isMapOpen ? '收起地图' : '开启地图'}}</button>
     </view>
-    <view style="font-size: 24rpx; color: #6f6a5f; line-height: 1.7; margin-bottom: 20rpx;">上传图片并填写简短备注后，AI 会宽松判断是否完成任务，无论通过与否都会返回一句评价。</view>
-    <button class="primary-btn" bindtap="verifyActiveMission" loading="{{isVerifyingMission}}">核验当前任务</button>
-  </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <view class="section-title">地图与轨迹</view>
-    <map
-      longitude="{{draft.longitude || 116.39747}}"
-      latitude="{{draft.latitude || 39.908823}}"
-      scale="15"
-      show-location
-      polyline="{{[{ points: draft.routePoints, color: '#5a5a40', width: 4 }]}}"
-      style="width: 100%; height: 360rpx; border-radius: 22rpx; overflow: hidden;"
-    />
-    <view class="meta-row" style="margin: 20rpx 0;">
-      <view class="meta-pill">{{draft.routePoints.length}} 个轨迹点</view>
-      <view class="meta-pill">{{isTracking ? '追踪中' : '未追踪'}}</view>
+    <view wx:if="{{isMapOpen}}" class="map-shell">
+      <map
+        longitude="{{draft.longitude || 116.39747}}"
+        latitude="{{draft.latitude || 39.908823}}"
+        scale="15"
+        show-location
+        polyline="{{[{ points: draft.routePoints, color: '#5a5a40', width: 4 }]}}"
+        style="width: 100%; height: 360rpx; border-radius: 22rpx; overflow: hidden;"
+      />
+      <view class="meta-row" style="margin-top: 20rpx;">
+        <view class="meta-pill">{{draft.routePoints.length}} 个轨迹点</view>
+        <view class="meta-pill">{{isTracking ? '追踪中' : '未追踪'}}</view>
+      </view>
+      <button class="primary-btn" bindtap="toggleTracking" style="margin-top: 20rpx;">{{isTracking ? '停止追踪' : '开始追踪'}}</button>
     </view>
-    <button class="ghost-btn" bindtap="toggleTracking">{{isTracking ? '停止轨迹记录' : '开始轨迹记录'}}</button>
+
+    <view wx:else class="record-panel">
+      <view class="active-task-card">
+        <view class="field-label">当前任务</view>
+        <view class="active-task-text">{{activeMission || '先选择一条任务'}}</view>
+      </view>
+      <textarea class="text-area" placeholder="写下你此刻看到的、听到的，或这次漫步给你的感觉..." value="{{draft.noteText}}" bindinput="handleNoteInput" maxlength="500" />
+    </view>
   </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <view class="section-title">图片记录</view>
-    <view style="font-size: 24rpx; color: #6f6a5f; margin-bottom: 16rpx;">支持一次多选，当前素材会用于当前任务的 AI 核验与整次漫步记录。</view>
-    <button class="ghost-btn" bindtap="choosePhoto" style="margin-bottom: 20rpx;">拍照或从相册多选</button>
-    <scroll-view scroll-x>
-      <view style="display: flex; gap: 16rpx;">
-        <view wx:for="{{draft.photoList}}" wx:key="index" style="position: relative;">
-          <image src="{{item}}" mode="aspectFill" style="width: 180rpx; height: 180rpx; border-radius: 20rpx;" />
-          <view class="danger-btn" bindtap="removePhoto" data-index="{{index}}" style="position: absolute; top: 8rpx; right: 8rpx; padding: 10rpx 14rpx; font-size: 22rpx;">删</view>
+  <view class="section-card section-block">
+    <view class="section-title">多媒体记录</view>
+    <view class="media-actions">
+      <button class="ghost-btn" bindtap="choosePhoto">照片</button>
+      <button class="ghost-btn" bindtap="chooseVideo">视频</button>
+      <button class="ghost-btn" bindtap="toggleAudioRecording">{{isRecordingAudio ? '停止录音' : '录音'}}</button>
+    </view>
+
+    <view wx:if="{{draft.photoList.length}}" class="media-group">
+      <view class="field-label">照片</view>
+      <scroll-view scroll-x>
+        <view class="media-scroll">
+          <view wx:for="{{draft.photoList}}" wx:key="index" class="media-thumb">
+            <image src="{{item}}" mode="aspectFill" class="media-image" />
+            <view class="danger-btn media-remove" bindtap="removePhoto" data-index="{{index}}">删</view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view wx:if="{{draft.videoList.length}}" class="media-group">
+      <view class="field-label">视频</view>
+      <view wx:for="{{draft.videoList}}" wx:key="index" class="asset-row">
+        <view>
+          <view class="asset-title">视频 {{index + 1}}</view>
+          <view class="asset-meta">{{item.duration}} 秒</view>
+        </view>
+        <button class="ghost-btn" size="mini" bindtap="removeVideo" data-index="{{index}}">删除</button>
+      </view>
+    </view>
+
+    <view wx:if="{{draft.audioList.length || isRecordingAudio}}" class="media-group">
+      <view class="field-label">录音</view>
+      <view wx:if="{{isRecordingAudio}}" class="asset-row">
+        <view>
+          <view class="asset-title">录音进行中</view>
+          <view class="asset-meta">再次点击“停止录音”即可保存到当前漫步草稿</view>
         </view>
       </view>
-    </scroll-view>
+      <view wx:for="{{draft.audioList}}" wx:key="index" class="asset-row">
+        <view>
+          <view class="asset-title">录音 {{index + 1}}</view>
+          <view class="asset-meta">{{item.duration}} ms</view>
+        </view>
+        <button class="ghost-btn" size="mini" bindtap="removeAudio" data-index="{{index}}">删除</button>
+      </view>
+    </view>
   </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <view class="section-title">文字记录</view>
-    <textarea class="text-area" placeholder="补充当前任务的备注、你的观察，或让 AI 更容易理解这组照片..." value="{{draft.noteText}}" bindinput="handleNoteInput" maxlength="300" />
-  </view>
-
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <checkbox-group bindchange="handleVisibilityChange">
-      <label style="display: flex; align-items: center; gap: 16rpx;">
-        <checkbox value="public" checked="{{draft.isPublic}}" color="#5a5a40" />
-        <view>公开到社区</view>
-      </label>
-    </checkbox-group>
-  </view>
-
-  <button class="primary-btn" bindtap="handleSave" loading="{{isSaving}}">保存本次漫步</button>
+  <button class="primary-btn" bindtap="handleSave" loading="{{isSaving}}">完成本次漫步并保存</button>
 </view>
 
 <view wx:else class="page-shell empty-copy">还没有选定主题，请先返回探索页生成。</view>

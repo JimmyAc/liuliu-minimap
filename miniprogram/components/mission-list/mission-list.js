@@ -41,6 +41,11 @@ Component({
       this.triggerEvent('select', { mission });
     },
 
+    toggleMission(event) {
+      const mission = event.currentTarget.dataset.mission;
+      this.triggerEvent('toggle', { mission });
+    },
+
     verifyMission(event) {
       const mission = event.currentTarget.dataset.mission;
       this.triggerEvent('verify', { mission });

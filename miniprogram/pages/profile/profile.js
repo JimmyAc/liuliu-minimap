@@ -33,4 +33,8 @@ Page({
     app.clearWalkDraft();
     wx.showToast({ title: '草稿已清空', icon: 'success' });
   },
+
+  openMapDebug() {
+    wx.navigateTo({ url: '/pages/feed/feed' });
+  },
 });

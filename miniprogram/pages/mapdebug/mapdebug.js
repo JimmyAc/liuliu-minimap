@@ -209,6 +209,10 @@ Page({
       activePoiIndex: index,
       polyline: [],
     });
+    this.mapCtx.moveToLocation({
+      longitude: poi.longitude,
+      latitude: poi.latitude,
+    });
   },
 
   markerTap(event) {

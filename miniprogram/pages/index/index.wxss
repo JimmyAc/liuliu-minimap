@@ -1,0 +1,99 @@
+.explore-page {
+  gap: 24rpx;
+}
+
+.explore-hero,
+.location-card {
+  padding: 28rpx;
+  margin-bottom: 24rpx;
+}
+
+.mode-switch {
+  display: inline-flex;
+  background: rgba(90, 90, 64, 0.08);
+  border-radius: 999rpx;
+  padding: 8rpx;
+  margin-bottom: 24rpx;
+}
+
+.mode-chip {
+  padding: 16rpx 34rpx;
+  border-radius: 999rpx;
+  color: #6f6a5f;
+  font-size: 26rpx;
+}
+
+.mode-chip-active {
+  background: #5a5a40;
+  color: #fff;
+}
+
+.search-panel {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.search-input {
+  flex: 1;
+  min-height: 84rpx;
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: 999rpx;
+  padding: 0 28rpx;
+  box-sizing: border-box;
+}
+
+.search-btn {
+  min-width: 148rpx;
+}
+
+.search-result-list {
+  margin-top: 18rpx;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.search-result-item {
+  padding: 22rpx 24rpx;
+  border-bottom: 1rpx solid #ece5d9;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-name {
+  font-size: 28rpx;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
+}
+
+.search-result-address,
+.location-address {
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #7f7a6f;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.action-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.action-row button {
+  flex: 1;
+}
+
+.full-width-btn {
+  width: 100%;
+}

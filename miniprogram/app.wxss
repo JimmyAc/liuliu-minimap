@@ -4,6 +4,10 @@ page {
   font-size: 28rpx;
 }
 
+button::after {
+  border: none;
+}
+
 .page-shell {
   min-height: 100vh;
   padding: 32rpx;
@@ -61,7 +65,7 @@ page {
 .danger-btn {
   border-radius: 999rpx;
   font-size: 28rpx;
-  line-height: 1;
+  line-height: 1.2;
   padding: 24rpx 28rpx;
 }
 
