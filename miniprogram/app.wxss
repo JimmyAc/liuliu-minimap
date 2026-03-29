@@ -21,7 +21,7 @@ button::after {
 .mission-card {
   background: rgba(255, 255, 255, 0.92);
   border: 1rpx solid #e8e2d6;
-  border-radius: 28rpx;
+  border-radius: 40rpx;
   box-shadow: 0 12rpx 32rpx rgba(33, 28, 18, 0.06);
 }
 
@@ -100,7 +100,7 @@ button::after {
 .text-area {
   width: 100%;
   background: #fff;
-  border-radius: 22rpx;
+  border-radius: 32rpx;
   border: 1rpx solid #e8e2d6;
   box-sizing: border-box;
 }

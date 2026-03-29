@@ -1,19 +1,46 @@
 .explore-page {
-  gap: 24rpx;
+  background:
+    radial-gradient(circle at top left, rgba(185, 106, 85, 0.16), transparent 24%),
+    radial-gradient(circle at top right, rgba(82, 112, 138, 0.14), transparent 22%),
+    linear-gradient(180deg, #f7f1e8 0%, #f1ebe2 100%);
 }
 
 .explore-hero,
-.location-card {
+.mode-card,
+.explore-map-card {
   padding: 28rpx;
   margin-bottom: 24rpx;
 }
 
+.explore-hero {
+  background: linear-gradient(145deg, rgba(255, 251, 245, 0.98), rgba(247, 238, 227, 0.95));
+}
+
+.hero-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.hero-title {
+  font-size: 42rpx;
+  font-weight: 600;
+  margin-bottom: 10rpx;
+}
+
+.hero-subtitle {
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #756d60;
+}
+
 .mode-switch {
   display: inline-flex;
-  background: rgba(90, 90, 64, 0.08);
+  background: rgba(90, 90, 64, 0.1);
   border-radius: 999rpx;
   padding: 8rpx;
-  margin-bottom: 24rpx;
 }
 
 .mode-chip {
@@ -32,25 +59,41 @@
   display: flex;
   align-items: center;
   gap: 16rpx;
+  margin-bottom: 18rpx;
 }
 
 .search-input {
   flex: 1;
   min-height: 84rpx;
-  background: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.94);
   border-radius: 999rpx;
   padding: 0 28rpx;
   box-sizing: border-box;
+  box-shadow: inset 0 0 0 1rpx rgba(207, 195, 179, 0.6);
 }
 
 .search-btn {
   min-width: 148rpx;
 }
 
+.hero-meta {
+  margin-top: 0;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 18rpx;
+}
+
+.hero-actions button {
+  flex: 1;
+}
+
 .search-result-list {
   margin-top: 18rpx;
   background: rgba(255, 255, 255, 0.92);
-  border-radius: 24rpx;
+  border-radius: 32rpx;
   overflow: hidden;
 }
 
@@ -70,10 +113,97 @@
 }
 
 .search-result-address,
-.location-address {
+.helper-copy {
   font-size: 24rpx;
   line-height: 1.7;
   color: #7f7a6f;
+}
+
+.explore-map-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 241, 232, 0.94));
+  border-radius: 40rpx;
+}
+
+.explore-map-shell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 32rpx;
+  margin-top: 6rpx;
+}
+
+.explore-map {
+  width: 100%;
+  height: 360rpx;
+}
+
+.map-center-pin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 56rpx;
+  height: 56rpx;
+  margin-left: -28rpx;
+  margin-top: -56rpx;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-center-pin::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34rpx;
+  height: 34rpx;
+  margin-left: -17rpx;
+  margin-top: -17rpx;
+  background: #ffffff;
+  border: 6rpx solid #5a5a40;
+  border-radius: 999rpx;
+  box-shadow: 0 10rpx 24rpx rgba(47, 43, 36, 0.18);
+}
+
+.map-center-pin::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -8rpx;
+  margin-top: 10rpx;
+  border-left: 8rpx solid transparent;
+  border-right: 8rpx solid transparent;
+  border-top: 18rpx solid #5a5a40;
+}
+
+.map-center-pin-dot {
+  position: relative;
+  z-index: 1;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 999rpx;
+  background: #5a5a40;
+}
+
+.map-helper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-top: 18rpx;
+}
+
+.map-helper-copy {
+  flex: 1;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #7f7a6f;
+}
+
+.map-confirm-btn {
+  flex-shrink: 0;
+  min-width: 196rpx;
 }
 
 .section-heading {
@@ -84,16 +214,39 @@
   margin-bottom: 16rpx;
 }
 
-.action-row {
+.action-grid {
   display: flex;
   gap: 16rpx;
   margin-top: 20rpx;
+  margin-bottom: 20rpx;
 }
 
-.action-row button {
+.action-grid button {
   flex: 1;
+}
+
+.action-tall-btn {
+  min-height: 92rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.section-label {
+  margin-top: 8rpx;
+}
+
+.selection-row {
+  margin-bottom: 18rpx;
+}
+
+.display-card-shell {
+  margin-bottom: 24rpx;
 }
 
 .full-width-btn {
   width: 100%;
+}
+
+.advanced-generate-btn {
+  margin-top: 12rpx;
 }

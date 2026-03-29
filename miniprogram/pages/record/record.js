@@ -18,6 +18,7 @@ Page({
     isSaving: false,
     isMapOpen: false,
     isRecordingAudio: false,
+    expandedMission: '',
   },
 
   onLoad() {
@@ -71,7 +72,10 @@ Page({
     const mission = event.detail.mission;
     const draft = { ...this.data.draft, selectedMission: mission };
     this.setDraft(draft);
-    this.setData({ activeMission: mission });
+    this.setData({
+      activeMission: mission,
+      expandedMission: this.data.expandedMission === mission ? '' : mission,
+    });
   },
 
   toggleMissionDone(event) {
@@ -94,13 +98,17 @@ Page({
       this.setData({ activeMission: mission });
     }
     wx.showActionSheet({
-      itemList: ['直接勾选完成', 'AI 图文核验'],
+      itemList: ['拍照', '录像', '录音'],
       success: async (res) => {
         if (res.tapIndex === 0) {
-          this.toggleMissionDone({ detail: { mission } });
+          await this.choosePhoto();
           return;
         }
-        await this.verifyActiveMission();
+        if (res.tapIndex === 1) {
+          await this.chooseVideo();
+          return;
+        }
+        this.toggleAudioRecording();
       },
     });
   },
@@ -256,10 +264,6 @@ Page({
     }, 10000);
   },
 
-  toggleMapPanel() {
-    this.setData({ isMapOpen: !this.data.isMapOpen });
-  },
-
   stopTracking() {
     if (routeTimer) {
       clearInterval(routeTimer);
@@ -337,4 +341,6 @@ Page({
     }
     return requestUpload(filePath, { kind });
   },
+
+  noop() {},
 });

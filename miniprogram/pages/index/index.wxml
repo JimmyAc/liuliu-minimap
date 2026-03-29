@@ -1,75 +1,117 @@
 <view class="page-shell explore-page">
   <view class="hero-card explore-hero">
-    <view class="mode-switch">
-      <view class="mode-chip {{walkMode === 'pure' ? 'mode-chip-active' : ''}}" bindtap="setOption" data-field="walkMode" data-value="pure">纯粹</view>
-      <view class="mode-chip {{walkMode === 'advanced' ? 'mode-chip-active' : ''}}" bindtap="setOption" data-field="walkMode" data-value="advanced">进阶</view>
+    <view class="hero-topline">
+      <view>
+        <view class="hero-title">探索页</view>
+        <view class="hero-subtitle">为今天的城市留下一条独特线索，让漫步从此刻的灵感开始</view>
+      </view>
+      <view class="mode-switch">
+        <view class="mode-chip {{walkMode === 'pure' ? 'mode-chip-active' : ''}}" bindtap="setOption" data-field="walkMode" data-value="pure">纯粹</view>
+        <view class="mode-chip {{walkMode === 'advanced' ? 'mode-chip-active' : ''}}" bindtap="setOption" data-field="walkMode" data-value="advanced">进阶</view>
+      </view>
     </view>
+
     <view class="search-panel">
-      <input class="search-input" placeholder="搜索街区、地标或附近地点" value="{{searchKeyword}}" bindinput="handleSearchInput" confirm-type="search" bindconfirm="searchLocation" />
+      <input class="search-input" placeholder="搜索地点或街区，作为 3km 范围探索中心" value="{{searchKeyword}}" bindinput="handleSearchInput" confirm-type="search" bindconfirm="searchLocation" />
       <button class="ghost-btn search-btn" bindtap="searchLocation" loading="{{loadingSearch}}">搜索</button>
     </view>
-    <view class="meta-row" style="margin-top: 18rpx;">
-      <view class="meta-pill">{{locationName}}</view>
-      <view class="meta-pill">{{walkMode === 'advanced' ? '3 个任务' : '1 个任务'}}</view>
-      <view class="meta-pill">微信 `map` + 高德 SDK</view>
-    </view>
-    <view wx:if="{{searchResults.length}}" class="search-result-list">
-      <view wx:for="{{searchResults}}" wx:key="id" class="search-result-item" bindtap="chooseSearchResult" data-index="{{index}}">
-        <view class="search-result-name">{{item.name}}</view>
-        <view class="search-result-address">{{item.address || '点击使用这个地点'}}</view>
-      </view>
-    </view>
-  </view>
 
-  <view class="section-card location-card">
-    <view class="section-heading">
-      <view>
-        <view class="section-title">探索地点</view>
-        <view class="section-subtitle">{{locationContext}}</view>
-      </view>
-      <view class="meta-pill">{{displayTag}}</view>
+    <view class="meta-row hero-meta">
+      <view class="meta-pill">{{locationName}}</view>
+      <view class="meta-pill">{{locationContext}}</view>
+      <view class="meta-pill">{{walkMode === 'advanced' ? '3 个任务' : '1 个任务'}}</view>
     </view>
-    <view class="location-address">{{locationAddress || '优先基于 3km 范围地点语境生成任务，减少 AI 幻觉。'}}</view>
-    <view class="action-row">
+
+    <view class="hero-actions">
       <button class="ghost-btn" bindtap="useCurrentLocation">当前位置</button>
       <button class="ghost-btn" bindtap="handleChooseLocation">地图选点</button>
     </view>
+
+    <view wx:if="{{searchResults.length}}" class="search-result-list">
+      <view wx:for="{{searchResults}}" wx:key="id" class="search-result-item" bindtap="chooseSearchResult" data-index="{{index}}">
+        <view class="search-result-name">{{item.name}}</view>
+        <view class="search-result-address">{{item.address || '把这里作为这次漫步的起点'}}</view>
+      </view>
+    </view>
   </view>
 
-  <theme-card theme="{{currentTheme}}" modeLabel="{{walkMode === 'advanced' ? '进阶模式' : '纯粹模式'}}" displaySummary="{{displaySummary}}" bind:start="handleStartWalk" />
+  <view class="section-card explore-map-card">
+    <view class="section-heading">
+      <view>
+        <view class="section-title">探索地图</view>
+        <view class="section-subtitle">把视线落在一片街区上，让这次漫步从你此刻想靠近的地方展开</view>
+      </view>
+      <view class="meta-pill">{{locationName}}</view>
+    </view>
+    <view class="explore-map-shell">
+      <map
+        id="explore-map"
+        longitude="{{longitude || 116.39747}}"
+        latitude="{{latitude || 39.908823}}"
+        scale="{{mapScale}}"
+        show-location
+        markers="{{mapMarkers}}"
+        circles="{{mapCircles}}"
+        bindregionchange="handleMapRegionChange"
+        class="explore-map"
+      />
+      <view class="map-center-pin">
+        <view class="map-center-pin-dot"></view>
+      </view>
+    </view>
+    <view class="map-helper-row">
+      <view class="map-helper-copy">{{isMapDragging ? '慢慢移动，寻找最想走进去的那一片街景' : '把定位针停在此刻最想出发的地方'}}</view>
+      <button class="primary-btn map-confirm-btn" bindtap="confirmMapCenterLocation">设为探索点</button>
+    </view>
+  </view>
 
-  <view class="section-card">
-    <view class="section-title">{{walkMode === 'advanced' ? '进阶条件' : '纯粹主题'}}</view>
-    <view wx:if="{{walkMode === 'pure'}}">
-      <view class="section-subtitle" style="margin-bottom: 20rpx;">从 5 个方向里随机一个，或主动选择 1-2 个主题。</view>
-      <view class="pill-row" style="margin-bottom: 20rpx;">
+  <view wx:if="{{walkMode === 'pure'}}" class="mode-board">
+    <view class="section-card mode-card">
+      <view class="section-title">随机主题 / 组合主题</view>
+
+      <view class="field-label section-label">主题选择（1 个或 2 个）</view>
+      <view class="pill-row selection-row">
         <view wx:for="{{combineOptionViews}}" wx:key="label" class="{{item.active ? 'pill-active' : 'pill'}}" bindtap="toggleCombineSelection" data-value="{{item.label}}">{{item.label}}</view>
       </view>
-      <view class="action-row">
-        <button class="ghost-btn" bindtap="handleRandomTheme" loading="{{isGenerating}}">随机主题</button>
-        <button class="primary-btn" bindtap="handleCombinedTheme" loading="{{isCombining}}">选择生成</button>
-      </view>
+      <view class="helper-copy">让主题先落下来，再从街道、光影和情绪里抽出今天的漫步线索</view>
+      <view class="action-grid">
+        <button class="ghost-btn action-tall-btn" bindtap="handleRandomTheme" loading="{{isGenerating}}">随机生成</button>
+        <button class="primary-btn action-tall-btn" bindtap="handleCombinedTheme" loading="{{isCombining}}">组合生成</button>
+      </view>      
     </view>
 
-    <view wx:else>
-      <view class="field-label">天气</view>
-      <view class="pill-row" style="margin-bottom: 20rpx;">
-        <view wx:for="{{weatherOptions}}" wx:key="item" class="{{weather === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="weather" data-value="{{item}}">{{item}}</view>
-      </view>
-      <view class="field-label">季节</view>
-      <view class="pill-row" style="margin-bottom: 20rpx;">
-        <view wx:for="{{seasonOptions}}" wx:key="item" class="{{season === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="season" data-value="{{item}}">{{item}}</view>
-      </view>
-      <view class="field-label">状态</view>
-      <view class="pill-row" style="margin-bottom: 20rpx;">
-        <view wx:for="{{moodOptions}}" wx:key="item" class="{{mood === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="mood" data-value="{{item}}">{{item}}</view>
-      </view>
-      <view class="field-label">偏好</view>
-      <view class="pill-row">
-        <view wx:for="{{preferenceOptions}}" wx:key="item" class="{{preference === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="preference" data-value="{{item}}">{{item}}</view>
-      </view>
+    <view class="display-card-shell">
+      <theme-card theme="{{currentTheme}}" modeLabel="纯粹模式" displaySummary="{{displaySummary}}" bind:start="handleStartWalk" />
     </view>
   </view>
 
-  <button wx:if="{{walkMode === 'advanced'}}" class="primary-btn full-width-btn" bindtap="handleGenerateTheme" loading="{{isGenerating}}">AI 生成今日进阶任务</button>
+  <view wx:else class="mode-board">
+    <view class="section-card mode-card">
+      <view class="field-label">天气</view>
+      <view class="pill-row selection-row">
+        <view wx:for="{{weatherOptions}}" wx:key="item" class="{{weather === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="weather" data-value="{{item}}">{{item}}</view>
+      </view>
+
+      <view class="field-label">季节</view>
+      <view class="pill-row selection-row">
+        <view wx:for="{{seasonOptions}}" wx:key="item" class="{{season === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="season" data-value="{{item}}">{{item}}</view>
+      </view>
+
+      <view class="field-label">状态</view>
+      <view class="pill-row selection-row">
+        <view wx:for="{{moodOptions}}" wx:key="item" class="{{mood === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="mood" data-value="{{item}}">{{item}}</view>
+      </view>
+
+      <view class="field-label">偏好</view>
+      <view class="pill-row selection-row">
+        <view wx:for="{{preferenceOptions}}" wx:key="item" class="{{preference === item ? 'pill-active' : 'pill'}}" bindtap="setOption" data-field="preference" data-value="{{item}}">{{item}}</view>
+      </view>
+
+      <button class="primary-btn full-width-btn advanced-generate-btn" bindtap="handleGenerateTheme" loading="{{isGenerating}}">AI 生成</button>
+    </view>
+
+    <view class="display-card-shell">
+      <theme-card theme="{{currentTheme}}" modeLabel="进阶模式" displaySummary="{{displaySummary}}" bind:start="handleStartWalk" />
+    </view>
+  </view>
 </view>

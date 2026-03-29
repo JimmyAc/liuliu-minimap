@@ -4,11 +4,18 @@
     "miniprogram": {
       "list": [
         {
-          "name": "pages/map-debug/map-debug",
-          "pathName": "pages/map-debug/map-debug",
+          "name": "pages/index/index",
+          "pathName": "pages/index/index",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "pages/map-debug/map-debug",
+          "pathName": "pages/map-debug/map-debug",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "pages/map-debug/map-debug",

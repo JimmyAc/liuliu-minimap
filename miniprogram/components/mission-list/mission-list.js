@@ -8,6 +8,10 @@ Component({
       type: String,
       value: '',
     },
+    expandedMission: {
+      type: String,
+      value: '',
+    },
     missions: {
       type: Array,
       value: [],
@@ -23,11 +27,12 @@ Component({
   },
 
   observers: {
-    'missions, activeMission, completedMissions, missionReviews': function updateMissionCards(missions, activeMission, completedMissions, missionReviews) {
+    'missions, activeMission, expandedMission, completedMissions, missionReviews': function updateMissionCards(missions, activeMission, expandedMission, completedMissions, missionReviews) {
       const completedSet = new Set(completedMissions || []);
       const cards = (missions || []).map((mission) => ({
         mission,
         active: activeMission === mission,
+        expanded: expandedMission === mission,
         completed: completedSet.has(mission),
         review: missionReviews && missionReviews[mission] ? missionReviews[mission] : null,
       }));

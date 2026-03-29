@@ -8,8 +8,9 @@ const {
   SEASONS,
   PREFERENCES,
 } = require('../../utils/constants');
-const { chooseLocation, explainLocationError, getCurrentLocation } = require('../../utils/location');
-const { getInputTips, getRegeo, normalizeAmapLocation } = require('../../utils/amap');
+const { explainLocationError, getCurrentLocation } = require('../../utils/location');
+const { getRegeo, normalizeAmapLocation } = require('../../utils/amap');
+const { searchLocations } = require('../../services/map');
 const { generateCombinedTheme, generateRandomTheme, generateTheme, getLocationContext } = require('../../services/theme');
 
 function normalizeMissionText(mission) {
@@ -28,7 +29,24 @@ function normalizeMissionText(mission) {
     if (typeof mission.name === 'string' && typeof mission.description === 'string') {
       return `${mission.name}：${mission.description}`;
     }
-    return mission.text || mission.title || mission.label || mission.mission || mission.name || JSON.stringify(mission);
+    const preferred =
+      mission.task ||
+      mission.text ||
+      mission.title ||
+      mission.label ||
+      mission.mission ||
+      mission.name ||
+      mission.description;
+    if (preferred) {
+      return String(preferred).trim();
+    }
+    const firstStringValue = Object.keys(mission)
+      .map((key) => mission[key])
+      .find((value) => typeof value === 'string' && value.trim());
+    if (firstStringValue) {
+      return firstStringValue.trim();
+    }
+    return JSON.stringify(mission);
   }
   return String(mission);
 }
@@ -64,8 +82,22 @@ function buildSearchResultViews(results) {
     id: item.id || item.location || `${item.name || item.address || 'result'}-${index}`,
     name: item.name || item.address || item.district || '推荐地点',
     address: item.address || item.district || '',
-    latitude: item.latitude !== undefined && item.latitude !== null ? Number(item.latitude) : (item.location ? Number(String(item.location).split(',')[1]) : null),
-    longitude: item.longitude !== undefined && item.longitude !== null ? Number(item.longitude) : (item.location ? Number(String(item.location).split(',')[0]) : null),
+    latitude:
+      item.latitude !== undefined && item.latitude !== null
+        ? Number(item.latitude)
+        : item.lat !== undefined && item.lat !== null
+          ? Number(item.lat)
+          : item.location
+            ? Number(String(item.location).split(',')[1])
+            : null,
+    longitude:
+      item.longitude !== undefined && item.longitude !== null
+        ? Number(item.longitude)
+        : item.lng !== undefined && item.lng !== null
+          ? Number(item.lng)
+          : item.location
+            ? Number(String(item.location).split(',')[0])
+            : null,
   }));
 }
 
@@ -92,6 +124,12 @@ Page({
     locationAddress: '',
     latitude: null,
     longitude: null,
+    mapCenterLatitude: null,
+    mapCenterLongitude: null,
+    mapScale: 14,
+    mapMarkers: [],
+    mapCircles: [],
+    isMapDragging: false,
     walkMode: 'pure',
     isGenerating: false,
     searchKeyword: '',
@@ -102,9 +140,69 @@ Page({
   onLoad() {
     const randomTheme = PRESET_THEMES[Math.floor(Math.random() * PRESET_THEMES.length)];
     const currentTheme = trimTheme({ ...randomTheme, locationName: '当前位置', allMissions: randomTheme.missions }, 'pure');
-    this.setData({ currentTheme });
+    this.setData({
+      currentTheme,
+      latitude: 39.908823,
+      longitude: 116.39747,
+      mapCenterLatitude: 39.908823,
+      mapCenterLongitude: 116.39747,
+      mapMarkers: [{
+        id: 0,
+        latitude: 39.908823,
+        longitude: 116.39747,
+        width: 28,
+        height: 28,
+        callout: {
+          content: '等待选点',
+          display: 'BYCLICK',
+          padding: 8,
+          borderRadius: 10,
+          bgColor: '#ffffff',
+          color: '#2f2b24',
+          fontSize: 12,
+        },
+      }],
+    });
     app.globalData.currentTheme = currentTheme;
     this.syncDisplayMeta(currentTheme, 'preset', 'pure');
+  },
+
+  onReady() {
+    this.mapCtx = wx.createMapContext('explore-map', this);
+  },
+
+  buildMapState({ latitude, longitude, placeName }) {
+    return {
+      latitude,
+      longitude,
+      mapCenterLatitude: latitude,
+      mapCenterLongitude: longitude,
+      mapMarkers: [{
+        id: 0,
+        latitude,
+        longitude,
+        width: 30,
+        height: 30,
+        anchor: { x: 0.5, y: 1 },
+        callout: {
+          content: placeName || '已选地点',
+          display: 'BYCLICK',
+          padding: 8,
+          borderRadius: 10,
+          bgColor: '#ffffff',
+          color: '#2f2b24',
+          fontSize: 12,
+        },
+      }],
+      mapCircles: [{
+        latitude,
+        longitude,
+        radius: 3000,
+        color: '#5a5a40',
+        fillColor: '#5a5a4022',
+        strokeWidth: 2,
+      }],
+    };
   },
 
   syncDisplayMeta(theme, source, walkMode = this.data.walkMode) {
@@ -165,6 +263,11 @@ Page({
       locationContext: contextResponse.context || amapSummary.district || '城市街道',
       locationAddress: amapSummary.address || location.address || '',
       searchResults: [],
+      ...this.buildMapState({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        placeName: contextResponse.placeName || amapSummary.placeName || location.name || '已选地点',
+      }),
     });
   },
 
@@ -181,14 +284,51 @@ Page({
   },
 
   async handleChooseLocation() {
+    wx.showToast({ title: '拖动下方地图后，点“设为探索点”', icon: 'none', duration: 2200 });
+  },
+
+  handleMapRegionChange(event) {
+    const { type } = event;
+    if (type === 'begin') {
+      this.setData({ isMapDragging: true });
+      return;
+    }
+
+    if (type !== 'end' || !this.mapCtx || !this.mapCtx.getCenterLocation) {
+      return;
+    }
+
+    this.mapCtx.getCenterLocation({
+      success: (res) => {
+        this.setData({
+          mapCenterLatitude: res.latitude,
+          mapCenterLongitude: res.longitude,
+          isMapDragging: false,
+        });
+      },
+      fail: () => {
+        this.setData({ isMapDragging: false });
+      },
+    });
+  },
+
+  async confirmMapCenterLocation() {
+    const latitude = Number(this.data.mapCenterLatitude);
+    const longitude = Number(this.data.mapCenterLongitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      wx.showToast({ title: '先拖动地图选择位置', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '分析地点' });
     try {
-      const location = await chooseLocation();
-      wx.showLoading({ title: '分析地点' });
-      await this.enrichLocation(location);
+      await this.enrichLocation({
+        latitude,
+        longitude,
+        name: '地图选点',
+        address: '',
+      });
     } catch (error) {
-      if (error && error.errMsg && error.errMsg.includes('cancel')) {
-        return;
-      }
       wx.showToast({ title: explainLocationError(error, '选点'), icon: 'none', duration: 2500 });
     } finally {
       wx.hideLoading();
@@ -208,10 +348,10 @@ Page({
 
     this.setData({ loadingSearch: true });
     const searchResults = buildSearchResultViews(
-      await getInputTips({
+      await searchLocations(
         keyword,
-        location: this.data.latitude && this.data.longitude ? { latitude: this.data.latitude, longitude: this.data.longitude } : null,
-      })
+        this.data.latitude && this.data.longitude ? { latitude: this.data.latitude, longitude: this.data.longitude } : null,
+      )
     );
     this.setData({ searchResults, loadingSearch: false });
 

@@ -1,45 +1,100 @@
-.mission-entry {
-  padding: 22rpx;
-  margin-bottom: 14rpx;
-  border: 1rpx solid #ece5d9;
-}
-
-.mission-entry-active {
-  border: 2rpx solid #5a5a40;
-}
-
-.mission-topline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16rpx;
+.mission-group {
   margin-bottom: 12rpx;
 }
 
-.mission-maintext {
+.mission-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #ede4d7;
+}
+
+.mission-row:last-child {
+  border-bottom: none;
+}
+
+.mission-toggle {
+  width: 38rpx;
+  height: 38rpx;
+  border-radius: 50%;
+  border: 3rpx solid #c6bcac;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.mission-toggle-done {
+  border-color: #6c6a49;
+}
+
+.mission-toggle-inner {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #6c6a49;
+}
+
+.mission-copy {
   flex: 1;
+  font-size: 28rpx;
   line-height: 1.7;
+  color: #2f2b24;
 }
 
-.mission-review {
-  font-size: 22rpx;
-  line-height: 1.6;
-  margin-bottom: 12rpx;
+.mission-copy-done {
+  color: #9a9387;
+  text-decoration: line-through;
 }
 
-.mission-actions {
+.mission-inline-panel {
+  margin-top: 10rpx;
+  margin-left: 56rpx;
+  border: 1rpx solid #eadfce;
+  border-radius: 36rpx;
+  padding: 22rpx 18rpx 18rpx;
+  background: #fffdf9;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.mission-inline-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2f2b24;
+  margin-bottom: 18rpx;
+}
+
+.mission-inline-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16rpx;
+  gap: 14rpx;
+  width: 100%;
+  margin-bottom: 14rpx;
 }
 
-.mission-tip {
-  font-size: 22rpx;
-  color: #7f7a6f;
+.mission-inline-row:last-child {
+  margin-bottom: 0;
 }
 
-.mission-buttons {
-  display: flex;
-  gap: 12rpx;
+.mission-inline-row-single {
+  justify-content: flex-start;
+}
+
+.mission-inline-btn {
+  flex: 1;
+  min-height: 84rpx;
+  border-radius: 28rpx;
+  background: #fff;
+  border: 1rpx solid #e8dece;
+  color: #2f2b24;
+  font-size: 26rpx;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.mission-inline-btn-single {
+  flex: 0 0 calc(50% - 7rpx);
 }
