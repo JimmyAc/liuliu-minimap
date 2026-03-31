@@ -1,74 +1,95 @@
 <view class="page-shell" wx:if="{{theme && draft}}">
-  <view class="theme-card" style="padding: 28rpx; margin-bottom: 24rpx; border-top: 10rpx solid {{theme.vibeColor || '#5a5a40'}};">
-    <view style="font-size: 38rpx; font-weight: 600; margin-bottom: 14rpx;">{{theme.title}}</view>
-    <view style="color: #6f6a5f; line-height: 1.7; margin-bottom: 16rpx;">{{theme.description}}</view>
-    <view class="meta-row">
-      <view class="meta-pill">{{draft.locationName}}</view>
-      <view class="meta-pill">{{draft.locationContext}}</view>
+  <view class="theme-card record-hero">
+    <view wx:if="{{isTracking}}" class="record-map-stage">
+      <map
+        longitude="{{draft.longitude || 116.39747}}"
+        latitude="{{draft.latitude || 39.908823}}"
+        scale="15"
+        show-location
+        polyline="{{[{ points: draft.routePoints, color: '#5a5a40', width: 4 }]}}"
+        style="width: 100%; height: 360rpx;"
+      />
+    </view>
+    <view wx:else class="record-stage" style="background: linear-gradient(135deg, {{theme.vibeColor || '#5a5a40'}} 0%, #f1eadf 100%);">
+      <view class="record-stage-glyph">{{theme.displayGlyph || '遛'}}</view>
+      <view class="record-stage-copy">
+        <view class="record-stage-title">{{theme.title}}</view>
+        <view class="record-stage-desc">{{theme.description}}</view>
+      </view>
+    </view>
+    <view class="record-body">
+      <view class="meta-row">
+        <view class="meta-pill">{{draft.locationName}}</view>
+        <view class="meta-pill">{{draft.walkMode === 'advanced' ? '进阶模式' : '纯粹模式'}}</view>
+        <view class="meta-pill">{{draft.completedMissions.length}} / {{theme.missions.length}} 已完成</view>
+      </view>
     </view>
   </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
+  <button class="map-switch-btn" bindtap="toggleTracking">{{isTracking ? '停止地图' : '开启地图'}}</button>
+
+  <view class="section-card section-block">
     <view class="section-title">任务打卡</view>
-    <mission-list missions="{{theme.missions}}" activeMission="{{activeMission}}" completedMissions="{{draft.completedMissions}}" missionReviews="{{draft.missionReviews}}" bind:select="selectMission" bind:verify="handleMissionVerify" />
+    <mission-list missions="{{theme.missions}}" activeMission="{{activeMission}}" expandedMission="{{expandedMission}}" completedMissions="{{draft.completedMissions}}" missionReviews="{{draft.missionReviews}}" bind:select="selectMission" bind:verify="handleMissionVerify" bind:toggle="toggleMissionDone" />
   </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <view class="section-title">当前核验任务</view>
-    <view class="meta-row" style="margin-bottom: 16rpx;">
-      <view class="meta-pill">{{activeMission || '未选择任务'}}</view>
-      <view class="meta-pill">{{draft.walkMode === 'advanced' ? '进阶模式' : '纯粹模式'}}</view>
+  <view class="section-card section-block">
+    <view class="section-title">记录与追踪</view>
+    <view class="section-subtitle">把沿途留下的光影、声音和感受收拢起来，成为这次漫步的回声</view>
+
+    <view class="record-tools-grid">
+      <button class="tool-btn" bindtap="choosePhoto">
+        <text class="tool-btn-text">随手拍</text>
+      </button>
+      <button class="tool-btn" bindtap="chooseVideo">
+        <text class="tool-btn-text">录像</text>
+      </button>
+      <button class="tool-btn" bindtap="toggleAudioRecording">
+        <text class="tool-btn-text">{{isRecordingAudio ? '停止录音' : '录音'}}</text>
+      </button>
     </view>
-    <view style="font-size: 24rpx; color: #6f6a5f; line-height: 1.7; margin-bottom: 20rpx;">上传图片并填写简短备注后，AI 会宽松判断是否完成任务，无论通过与否都会返回一句评价。</view>
-    <button class="primary-btn" bindtap="verifyActiveMission" loading="{{isVerifyingMission}}">核验当前任务</button>
-  </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <view class="section-title">地图与轨迹</view>
-    <map
-      longitude="{{draft.longitude || 116.39747}}"
-      latitude="{{draft.latitude || 39.908823}}"
-      scale="15"
-      show-location
-      polyline="{{[{ points: draft.routePoints, color: '#5a5a40', width: 4 }]}}"
-      style="width: 100%; height: 360rpx; border-radius: 22rpx; overflow: hidden;"
-    />
-    <view class="meta-row" style="margin: 20rpx 0;">
-      <view class="meta-pill">{{draft.routePoints.length}} 个轨迹点</view>
-      <view class="meta-pill">{{isTracking ? '追踪中' : '未追踪'}}</view>
+    <textarea class="summary-area" placeholder="写下这一段路给你的感受、画面或突然冒出的念头..." value="{{draft.noteText}}" bindinput="handleNoteInput" maxlength="500" />
+
+    <view wx:if="{{draft.photoList.length}}" class="media-preview-block">
+      <scroll-view scroll-x>
+        <view class="media-scroll">
+          <view wx:for="{{draft.photoList}}" wx:key="index" class="media-thumb">
+            <image src="{{item}}" mode="aspectFill" class="media-image" />
+            <view class="danger-btn media-remove" bindtap="removePhoto" data-index="{{index}}">删</view>
+          </view>
+        </view>
+      </scroll-view>
     </view>
-    <button class="ghost-btn" bindtap="toggleTracking">{{isTracking ? '停止轨迹记录' : '开始轨迹记录'}}</button>
-  </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <view class="section-title">图片记录</view>
-    <view style="font-size: 24rpx; color: #6f6a5f; margin-bottom: 16rpx;">支持一次多选，当前素材会用于当前任务的 AI 核验与整次漫步记录。</view>
-    <button class="ghost-btn" bindtap="choosePhoto" style="margin-bottom: 20rpx;">拍照或从相册多选</button>
-    <scroll-view scroll-x>
-      <view style="display: flex; gap: 16rpx;">
-        <view wx:for="{{draft.photoList}}" wx:key="index" style="position: relative;">
-          <image src="{{item}}" mode="aspectFill" style="width: 180rpx; height: 180rpx; border-radius: 20rpx;" />
-          <view class="danger-btn" bindtap="removePhoto" data-index="{{index}}" style="position: absolute; top: 8rpx; right: 8rpx; padding: 10rpx 14rpx; font-size: 22rpx;">删</view>
+    <view wx:if="{{draft.videoList.length}}" class="asset-list">
+      <view wx:for="{{draft.videoList}}" wx:key="index" class="asset-row">
+        <view>
+          <view class="asset-title">视频 {{index + 1}}</view>
+          <view class="asset-meta">{{item.duration}} 秒</view>
+        </view>
+        <button class="ghost-btn" size="mini" bindtap="removeVideo" data-index="{{index}}">删除</button>
+      </view>
+    </view>
+
+    <view wx:if="{{draft.audioList.length || isRecordingAudio}}" class="asset-list">
+      <view wx:if="{{isRecordingAudio}}" class="asset-row">
+        <view>
+          <view class="asset-title">正在收集此刻的声音</view>
+          <view class="asset-meta">等这一段声响落定，再把它留在这次漫步里</view>
         </view>
       </view>
-    </scroll-view>
+      <view wx:for="{{draft.audioList}}" wx:key="index" class="asset-row">
+        <view>
+          <view class="asset-title">录音 {{index + 1}}</view>
+          <view class="asset-meta">{{item.duration}} ms</view>
+        </view>
+        <button class="ghost-btn" size="mini" bindtap="removeAudio" data-index="{{index}}">删除</button>
+      </view>
+    </view>
   </view>
 
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <view class="section-title">文字记录</view>
-    <textarea class="text-area" placeholder="补充当前任务的备注、你的观察，或让 AI 更容易理解这组照片..." value="{{draft.noteText}}" bindinput="handleNoteInput" maxlength="300" />
-  </view>
-
-  <view class="section-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <checkbox-group bindchange="handleVisibilityChange">
-      <label style="display: flex; align-items: center; gap: 16rpx;">
-        <checkbox value="public" checked="{{draft.isPublic}}" color="#5a5a40" />
-        <view>公开到社区</view>
-      </label>
-    </checkbox-group>
-  </view>
-
-  <button class="primary-btn" bindtap="handleSave" loading="{{isSaving}}">保存本次漫步</button>
+  <button class="primary-btn save-btn" bindtap="handleSave" loading="{{isSaving}}">完成本次漫步并保存</button>
 </view>
 
-<view wx:else class="page-shell empty-copy">还没有选定主题，请先返回探索页生成。</view>
+<view wx:else class="page-shell empty-copy">还没有属于今天的漫步主题，先去探索页挑一段想走的城市情绪吧</view>

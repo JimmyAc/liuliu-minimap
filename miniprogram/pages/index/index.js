@@ -1,6 +1,16 @@
 const app = getApp();
-const { COMBINE_THEME_OPTIONS, PRESET_THEMES, RANDOM_THEME_CATEGORIES, MOODS, WEATHERS, SEASONS, PREFERENCES } = require('../../utils/constants');
-const { chooseLocation, explainLocationError, getCurrentLocation } = require('../../utils/location');
+const {
+  COMBINE_THEME_OPTIONS,
+  PRESET_THEMES,
+  RANDOM_THEME_CATEGORIES,
+  MOODS,
+  WEATHERS,
+  SEASONS,
+  PREFERENCES,
+} = require('../../utils/constants');
+const { explainLocationError, getCurrentLocation } = require('../../utils/location');
+const { getRegeo, normalizeAmapLocation } = require('../../utils/amap');
+const { searchLocations } = require('../../services/map');
 const { generateCombinedTheme, generateRandomTheme, generateTheme, getLocationContext } = require('../../services/theme');
 
 function normalizeMissionText(mission) {
@@ -19,9 +29,32 @@ function normalizeMissionText(mission) {
     if (typeof mission.name === 'string' && typeof mission.description === 'string') {
       return `${mission.name}：${mission.description}`;
     }
-    return mission.text || mission.title || mission.label || mission.mission || mission.name || JSON.stringify(mission);
+    const preferred =
+      mission.task ||
+      mission.text ||
+      mission.title ||
+      mission.label ||
+      mission.mission ||
+      mission.name ||
+      mission.description;
+    if (preferred) {
+      return String(preferred).trim();
+    }
+    const firstStringValue = Object.keys(mission)
+      .map((key) => mission[key])
+      .find((value) => typeof value === 'string' && value.trim());
+    if (firstStringValue) {
+      return firstStringValue.trim();
+    }
+    return JSON.stringify(mission);
   }
   return String(mission);
+}
+
+function pickDisplayGlyph(theme) {
+  const source = (theme && (theme.glyph || theme.displayGlyph || theme.category || theme.title)) || '遛';
+  const matched = String(source).replace(/漫步|主题|：.*/g, '').trim();
+  return matched ? matched.slice(0, 1) : '遛';
 }
 
 function trimTheme(theme, walkMode) {
@@ -30,6 +63,7 @@ function trimTheme(theme, walkMode) {
   const allMissions = rawMissions.map(normalizeMissionText);
   return {
     ...theme,
+    displayGlyph: pickDisplayGlyph(theme),
     allMissions,
     missions: allMissions.slice(0, missionCount),
   };
@@ -43,13 +77,37 @@ function buildCombineOptionViews(selected) {
   }));
 }
 
+function buildSearchResultViews(results) {
+  return (results || []).slice(0, 5).map((item, index) => ({
+    id: item.id || item.location || `${item.name || item.address || 'result'}-${index}`,
+    name: item.name || item.address || item.district || '推荐地点',
+    address: item.address || item.district || '',
+    latitude:
+      item.latitude !== undefined && item.latitude !== null
+        ? Number(item.latitude)
+        : item.lat !== undefined && item.lat !== null
+          ? Number(item.lat)
+          : item.location
+            ? Number(String(item.location).split(',')[1])
+            : null,
+    longitude:
+      item.longitude !== undefined && item.longitude !== null
+        ? Number(item.longitude)
+        : item.lng !== undefined && item.lng !== null
+          ? Number(item.lng)
+          : item.location
+            ? Number(String(item.location).split(',')[0])
+            : null,
+  }));
+}
+
 Page({
   data: {
     combineOptionViews: buildCombineOptionViews([]),
     combineSelections: [],
     currentTheme: null,
     currentThemeSource: 'preset',
-    displaySummary: '当前展示的是系统预设主题。',
+    displaySummary: '根据你的位置与模式生成今天的 citywalk 任务。',
     displayTag: '展示栏',
     isCombining: false,
     moodOptions: MOODS,
@@ -57,24 +115,94 @@ Page({
     seasonOptions: SEASONS,
     preferenceOptions: PREFERENCES,
     randomCategories: RANDOM_THEME_CATEGORIES,
-    mood: MOODS[0],
+    mood: MOODS[4],
     weather: WEATHERS[0],
     season: SEASONS[0],
     preference: PREFERENCES[2],
     locationName: '当前位置',
     locationContext: '城市街道',
+    locationAddress: '',
     latitude: null,
     longitude: null,
+    mapCenterLatitude: null,
+    mapCenterLongitude: null,
+    mapScale: 14,
+    mapMarkers: [],
+    mapCircles: [],
+    isMapDragging: false,
     walkMode: 'pure',
     isGenerating: false,
+    searchKeyword: '',
+    searchResults: [],
+    loadingSearch: false,
   },
 
   onLoad() {
     const randomTheme = PRESET_THEMES[Math.floor(Math.random() * PRESET_THEMES.length)];
-    const currentTheme = trimTheme({ ...randomTheme, locationName: '当前位置', allMissions: randomTheme.missions }, this.data.walkMode);
-    this.setData({ currentTheme });
+    const currentTheme = trimTheme({ ...randomTheme, locationName: '当前位置', allMissions: randomTheme.missions }, 'pure');
+    this.setData({
+      currentTheme,
+      latitude: 39.908823,
+      longitude: 116.39747,
+      mapCenterLatitude: 39.908823,
+      mapCenterLongitude: 116.39747,
+      mapMarkers: [{
+        id: 0,
+        latitude: 39.908823,
+        longitude: 116.39747,
+        width: 28,
+        height: 28,
+        callout: {
+          content: '等待选点',
+          display: 'BYCLICK',
+          padding: 8,
+          borderRadius: 10,
+          bgColor: '#ffffff',
+          color: '#2f2b24',
+          fontSize: 12,
+        },
+      }],
+    });
     app.globalData.currentTheme = currentTheme;
-    this.syncDisplayMeta(currentTheme, 'preset');
+    this.syncDisplayMeta(currentTheme, 'preset', 'pure');
+  },
+
+  onReady() {
+    this.mapCtx = wx.createMapContext('explore-map', this);
+  },
+
+  buildMapState({ latitude, longitude, placeName }) {
+    return {
+      latitude,
+      longitude,
+      mapCenterLatitude: latitude,
+      mapCenterLongitude: longitude,
+      mapMarkers: [{
+        id: 0,
+        latitude,
+        longitude,
+        width: 30,
+        height: 30,
+        anchor: { x: 0.5, y: 1 },
+        callout: {
+          content: placeName || '已选地点',
+          display: 'BYCLICK',
+          padding: 8,
+          borderRadius: 10,
+          bgColor: '#ffffff',
+          color: '#2f2b24',
+          fontSize: 12,
+        },
+      }],
+      mapCircles: [{
+        latitude,
+        longitude,
+        radius: 3000,
+        color: '#5a5a40',
+        fillColor: '#5a5a4022',
+        strokeWidth: 2,
+      }],
+    };
   },
 
   syncDisplayMeta(theme, source, walkMode = this.data.walkMode) {
@@ -112,24 +240,42 @@ Page({
     const current = new Set(this.data.combineSelections);
     if (current.has(value)) {
       current.delete(value);
-    } else if (current.size < 3) {
+    } else if (current.size < 2 || !current.has(value)) {
       current.add(value);
     }
-    const combineSelections = Array.from(current);
+    const combineSelections = Array.from(current).slice(0, 2);
     this.setData({ combineSelections, combineOptionViews: buildCombineOptionViews(combineSelections) });
+  },
+
+  async enrichLocation(location) {
+    const regeo = await getRegeo(location).catch(() => null);
+    const amapSummary = normalizeAmapLocation(regeo, location.placeName || location.name || location.address);
+    const contextResponse = await getLocationContext({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      placeName: amapSummary.placeName || location.placeName || location.name || location.address,
+      address: amapSummary.address || location.address || '',
+    }).catch(() => ({}));
+    this.setData({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      locationName: contextResponse.placeName || amapSummary.placeName || '当前位置',
+      locationContext: contextResponse.context || amapSummary.district || '城市街道',
+      locationAddress: amapSummary.address || location.address || '',
+      searchResults: [],
+      ...this.buildMapState({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        placeName: contextResponse.placeName || amapSummary.placeName || location.name || '已选地点',
+      }),
+    });
   },
 
   async useCurrentLocation() {
     try {
       wx.showLoading({ title: '定位中' });
       const result = await getCurrentLocation();
-      const contextResponse = await getLocationContext({ latitude: result.latitude, longitude: result.longitude });
-      this.setData({
-        latitude: result.latitude,
-        longitude: result.longitude,
-        locationName: contextResponse.placeName || '当前位置',
-        locationContext: contextResponse.context || '城市街道',
-      });
+      await this.enrichLocation(result);
     } catch (error) {
       wx.showToast({ title: explainLocationError(error, '定位'), icon: 'none', duration: 2500 });
     } finally {
@@ -138,25 +284,93 @@ Page({
   },
 
   async handleChooseLocation() {
+    wx.showToast({ title: '拖动下方地图后，点“设为探索点”', icon: 'none', duration: 2200 });
+  },
+
+  handleMapRegionChange(event) {
+    const { type } = event;
+    if (type === 'begin') {
+      this.setData({ isMapDragging: true });
+      return;
+    }
+
+    if (type !== 'end' || !this.mapCtx || !this.mapCtx.getCenterLocation) {
+      return;
+    }
+
+    this.mapCtx.getCenterLocation({
+      success: (res) => {
+        this.setData({
+          mapCenterLatitude: res.latitude,
+          mapCenterLongitude: res.longitude,
+          isMapDragging: false,
+        });
+      },
+      fail: () => {
+        this.setData({ isMapDragging: false });
+      },
+    });
+  },
+
+  async confirmMapCenterLocation() {
+    const latitude = Number(this.data.mapCenterLatitude);
+    const longitude = Number(this.data.mapCenterLongitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      wx.showToast({ title: '先拖动地图选择位置', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '分析地点' });
     try {
-      const location = await chooseLocation();
-      wx.showLoading({ title: '分析地点' });
-      const contextResponse = await getLocationContext({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        placeName: location.name || location.address,
-      });
-      this.setData({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        locationName: contextResponse.placeName || location.name || location.address || '已选地点',
-        locationContext: contextResponse.context || '城市街道',
+      await this.enrichLocation({
+        latitude,
+        longitude,
+        name: '地图选点',
+        address: '',
       });
     } catch (error) {
-      if (error && error.errMsg && error.errMsg.includes('cancel')) {
-        return;
-      }
       wx.showToast({ title: explainLocationError(error, '选点'), icon: 'none', duration: 2500 });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  handleSearchInput(event) {
+    this.setData({ searchKeyword: event.detail.value });
+  },
+
+  async searchLocation() {
+    const keyword = (this.data.searchKeyword || '').trim();
+    if (!keyword) {
+      wx.showToast({ title: '输入地点关键词', icon: 'none' });
+      return;
+    }
+
+    this.setData({ loadingSearch: true });
+    const searchResults = buildSearchResultViews(
+      await searchLocations(
+        keyword,
+        this.data.latitude && this.data.longitude ? { latitude: this.data.latitude, longitude: this.data.longitude } : null,
+      )
+    );
+    this.setData({ searchResults, loadingSearch: false });
+
+    if (!searchResults.length) {
+      wx.showToast({ title: '暂无搜索建议，可直接手动选点', icon: 'none' });
+    }
+  },
+
+  async chooseSearchResult(event) {
+    const index = Number(event.currentTarget.dataset.index);
+    const item = this.data.searchResults[index];
+    if (!item || !Number.isFinite(item.latitude) || !Number.isFinite(item.longitude)) {
+      wx.showToast({ title: '该地点需要手动选点确认', icon: 'none' });
+      return;
+    }
+    wx.showLoading({ title: '确认地点' });
+    try {
+      await this.enrichLocation(item);
+      this.setData({ searchKeyword: item.name });
     } finally {
       wx.hideLoading();
     }
@@ -172,6 +386,8 @@ Page({
         preference: this.data.preference,
         locationName: this.data.locationName,
         locationContext: this.data.locationContext,
+        latitude: this.data.latitude,
+        longitude: this.data.longitude,
         walkMode: this.data.walkMode,
       });
       const currentTheme = trimTheme({ ...result.theme, allMissions: result.theme.missions, locationName: this.data.locationName }, this.data.walkMode);
@@ -193,6 +409,8 @@ Page({
         category,
         locationName: this.data.locationName,
         locationContext: this.data.locationContext,
+        latitude: this.data.latitude,
+        longitude: this.data.longitude,
         walkMode: this.data.walkMode,
       });
       const currentTheme = trimTheme({ ...result.theme, allMissions: result.theme.missions, locationName: this.data.locationName }, this.data.walkMode);
@@ -207,8 +425,8 @@ Page({
   },
 
   async handleCombinedTheme() {
-    if (this.data.combineSelections.length < 2) {
-      wx.showToast({ title: '至少选择两个方向', icon: 'none' });
+    if (this.data.combineSelections.length < 1) {
+      wx.showToast({ title: '请先选择 1-2 个主题', icon: 'none' });
       return;
     }
 
@@ -218,6 +436,8 @@ Page({
         categories: this.data.combineSelections,
         locationName: this.data.locationName,
         locationContext: this.data.locationContext,
+        latitude: this.data.latitude,
+        longitude: this.data.longitude,
         walkMode: this.data.walkMode,
       });
       const currentTheme = trimTheme({ ...result.theme, allMissions: result.theme.missions, locationName: this.data.locationName }, this.data.walkMode);
@@ -243,14 +463,19 @@ Page({
       startedAt: Date.now(),
       locationName: this.data.locationName,
       locationContext: this.data.locationContext,
+      locationAddress: this.data.locationAddress,
       latitude: this.data.latitude,
       longitude: this.data.longitude,
       missionReviews: {},
+      selectedMission: this.data.currentTheme.missions[0] || '',
       noteText: '',
       photoList: [],
+      videoList: [],
+      audioList: [],
       routePoints: [],
       walkMode: this.data.walkMode,
       generationSource: this.data.currentThemeSource,
+      isPublic: false,
     };
     app.setWalkDraft(draft);
     wx.navigateTo({ url: '/pages/record/record' });

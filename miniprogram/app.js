@@ -1,4 +1,4 @@
-const { cloudEnvId } = require('./utils/config');
+const { cloudEnvId, apiBaseUrl } = require('./utils/config');
 const { loadDraft, saveDraft } = require('./utils/draft');
 
 App({
@@ -9,15 +9,17 @@ App({
   },
 
   onLaunch() {
-    if (!wx.cloud) {
-      console.error('wx.cloud is not available in current base library');
+    if (!apiBaseUrl && wx.cloud) {
+      wx.cloud.init({
+        env: cloudEnvId,
+        traceUser: true,
+      });
       return;
     }
 
-    wx.cloud.init({
-      env: cloudEnvId,
-      traceUser: true,
-    });
+    if (!apiBaseUrl && !wx.cloud) {
+      console.error('wx.cloud is not available in current base library');
+    }
   },
 
   setWalkDraft(nextDraft) {

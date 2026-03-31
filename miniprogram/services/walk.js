@@ -1,19 +1,19 @@
-const { callCloud } = require('./cloud');
+const { callApi } = require('./api');
 
 function createWalk(payload) {
-  return callCloud('createWalk', payload);
+  return callApi('createWalk', payload);
 }
 
 function listMyWalks(payload = {}) {
-  return callCloud('listMyWalks', payload);
+  return callApi('listMyWalks', payload);
 }
 
 function listPublicWalks(payload = {}) {
-  return callCloud('listPublicWalks', payload);
+  return callApi('listPublicWalks', payload);
 }
 
 function getWalkDetail(payload = {}) {
-  return callCloud('getWalkDetail', payload);
+  return callApi('getWalkDetail', payload);
 }
 
 module.exports = {

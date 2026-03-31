@@ -1,19 +1,23 @@
 <view>
-  <view wx:for="{{missionCards}}" wx:key="mission" class="mission-card" style="padding: 22rpx; margin-bottom: 14rpx; border: {{item.active ? '2rpx solid #5a5a40' : '1rpx solid #ece5d9'}};" bindtap="selectMission" data-mission="{{item.mission}}">
-    <view style="display: flex; align-items: center; justify-content: space-between; gap: 16rpx; margin-bottom: 12rpx;">
-      <view style="flex: 1; color: {{item.completed ? '#8f897e' : '#1a1a1a'}}; text-decoration: {{item.completed ? 'line-through' : 'none'}};">
+  <view wx:for="{{missionCards}}" wx:key="mission" class="mission-group">
+    <view class="mission-row" bindtap="selectMission" data-mission="{{item.mission}}">
+      <view class="mission-toggle {{item.completed ? 'mission-toggle-done' : ''}}" catchtap="toggleMission" data-mission="{{item.mission}}">
+        <view wx:if="{{item.completed}}" class="mission-toggle-inner"></view>
+      </view>
+      <view class="mission-copy {{item.completed ? 'mission-copy-done' : ''}}">
         {{item.mission}}
       </view>
-      <view class="meta-pill">{{item.completed ? '已完成' : (item.review ? '已核验' : '待打卡')}}</view>
     </view>
-    <view wx:if="{{item.review}}" style="font-size: 22rpx; color: {{item.review.passed ? '#4f6d45' : '#8a6a52'}}; line-height: 1.6; margin-bottom: 12rpx;">
-      {{item.review.comment}}
-    </view>
-    <view style="display: flex; justify-content: space-between; align-items: center; gap: 16rpx;">
-      <view style="font-size: 22rpx; color: #7f7a6f;">
-        {{item.active ? '当前核验任务' : '点击切换到此任务'}}
+
+    <view wx:if="{{item.expanded}}" class="mission-inline-panel">
+      <view class="mission-inline-title">打卡此任务</view>
+      <view class="mission-inline-row">
+        <button class="mission-inline-btn" bindtap="verifyMission" data-mission="{{item.mission}}">拍照</button>
+        <button class="mission-inline-btn" bindtap="verifyMission" data-mission="{{item.mission}}">录像</button>
       </view>
-      <button class="ghost-btn" size="mini" catchtap="verifyMission" data-mission="{{item.mission}}">核验打卡</button>
+      <view class="mission-inline-row mission-inline-row-single">
+        <button class="mission-inline-btn mission-inline-btn-single" bindtap="verifyMission" data-mission="{{item.mission}}">录音</button>
+      </view>
     </view>
   </view>
 </view>

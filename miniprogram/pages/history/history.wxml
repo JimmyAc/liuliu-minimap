@@ -1,13 +1,29 @@
 <view class="page-shell">
-  <view class="hero-card" style="padding: 28rpx; margin-bottom: 24rpx;">
-    <view class="section-title">我的足迹</view>
-    <view class="section-subtitle">已保存的个人漫步记录会出现在这里。</view>
+  <view class="hero-card history-hero">
+    <view class="section-title">足迹</view>
+    <view class="section-subtitle">先保留“纪念卡册”和“成就”两块结构，后续再接完整生成逻辑。</view>
   </view>
 
-  <view wx:if="{{!loading && walks.length}}">
-    <walk-card wx:for="{{walks}}" wx:key="_id" walk="{{item}}" bind:open="openDetail" />
+  <view class="section-card history-tabs">
+    <view class="mode-switch">
+      <view class="mode-chip {{activeTab === 'album' ? 'mode-chip-active' : ''}}" bindtap="switchTab" data-tab="album">纪念卡册</view>
+      <view class="mode-chip {{activeTab === 'achievement' ? 'mode-chip-active' : ''}}" bindtap="switchTab" data-tab="achievement">成就</view>
+    </view>
   </view>
 
-  <view wx:elif="{{loading}}" class="empty-copy">正在加载你的足迹...</view>
-  <view wx:else class="empty-copy">还没有保存的漫步记录。</view>
+  <view wx:if="{{activeTab === 'album'}}">
+    <view wx:if="{{!loading && walks.length}}">
+      <walk-card wx:for="{{walks}}" wx:key="_id" walk="{{item}}" bind:open="openDetail" />
+    </view>
+    <view wx:elif="{{loading}}" class="empty-copy">正在整理你的纪念卡册...</view>
+    <view wx:else class="section-card history-placeholder">
+      <view class="section-title">纪念卡册</view>
+      <view class="section-subtitle">这里会放 AI 根据一次漫步内容生成的纪念卡，当前先留空。</view>
+    </view>
+  </view>
+
+  <view wx:else class="section-card history-placeholder">
+    <view class="section-title">成就</view>
+    <view class="section-subtitle">成就模块先留空，后续再按触发条件接入。</view>
+  </view>
 </view>

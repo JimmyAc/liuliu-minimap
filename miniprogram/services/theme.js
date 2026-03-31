@@ -1,23 +1,23 @@
-const { callCloud } = require('./cloud');
+const { callApi } = require('./api');
 
 function generateTheme(payload) {
-  return callCloud('generateTheme', payload);
+  return callApi('generateTheme', payload);
 }
 
 function generateRandomTheme(payload) {
-  return callCloud('generateRandomTheme', payload);
+  return callApi('generateRandomTheme', payload);
 }
 
 function generateCombinedTheme(payload) {
-  return callCloud('generateCombinedTheme', payload);
+  return callApi('generateCombinedTheme', payload);
 }
 
 function getLocationContext(payload) {
-  return callCloud('getLocationContext', payload);
+  return callApi('getLocationContext', payload);
 }
 
 function verifyMission(payload) {
-  return callCloud('verifyMission', payload);
+  return callApi('verifyMission', payload);
 }
 
 module.exports = {

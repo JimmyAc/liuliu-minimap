@@ -1,0 +1,100 @@
+.mission-group {
+  margin-bottom: 12rpx;
+}
+
+.mission-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #ede4d7;
+}
+
+.mission-row:last-child {
+  border-bottom: none;
+}
+
+.mission-toggle {
+  width: 38rpx;
+  height: 38rpx;
+  border-radius: 50%;
+  border: 3rpx solid #c6bcac;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.mission-toggle-done {
+  border-color: #6c6a49;
+}
+
+.mission-toggle-inner {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #6c6a49;
+}
+
+.mission-copy {
+  flex: 1;
+  font-size: 28rpx;
+  line-height: 1.7;
+  color: #2f2b24;
+}
+
+.mission-copy-done {
+  color: #9a9387;
+  text-decoration: line-through;
+}
+
+.mission-inline-panel {
+  margin-top: 10rpx;
+  margin-left: 56rpx;
+  border: 1rpx solid #eadfce;
+  border-radius: 36rpx;
+  padding: 22rpx 18rpx 18rpx;
+  background: #fffdf9;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.mission-inline-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2f2b24;
+  margin-bottom: 18rpx;
+}
+
+.mission-inline-row {
+  display: flex;
+  gap: 14rpx;
+  width: 100%;
+  margin-bottom: 14rpx;
+}
+
+.mission-inline-row:last-child {
+  margin-bottom: 0;
+}
+
+.mission-inline-row-single {
+  justify-content: flex-start;
+}
+
+.mission-inline-btn {
+  flex: 1;
+  min-height: 84rpx;
+  border-radius: 28rpx;
+  background: #fff;
+  border: 1rpx solid #e8dece;
+  color: #2f2b24;
+  font-size: 26rpx;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.mission-inline-btn-single {
+  flex: 0 0 calc(50% - 7rpx);
+}

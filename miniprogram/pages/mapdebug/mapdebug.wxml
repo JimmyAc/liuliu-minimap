@@ -1,7 +1,7 @@
 <view class="page-shell">
   <view class="hero-card block">
     <view class="section-title">地图调试</view>
-    <view class="section-subtitle">这里临时作为真机地图测试页，验证微信 `map` + 高德 SDK 是否可用。</view>
+    <view class="section-subtitle">用微信官方 `map` 负责展示与交互，用高德 SDK 负责搜索建议、逆地理和路线规划。</view>
     <view class="meta-row" style="margin-top: 16rpx;">
       <view class="meta-pill">{{keyReady ? '高德 Key 已配置' : '高德 Key 未配置'}}</view>
       <view class="meta-pill">3km 范围测试</view>

@@ -3,6 +3,7 @@ const { formatDate } = require('../../utils/format');
 
 Page({
   data: {
+    activeTab: 'album',
     walks: [],
     loading: false,
   },
@@ -33,5 +34,9 @@ Page({
       return;
     }
     wx.navigateTo({ url: `/pages/walk-detail/walk-detail?id=${id}&source=history` });
+  },
+
+  switchTab(event) {
+    this.setData({ activeTab: event.currentTarget.dataset.tab });
   },
 });

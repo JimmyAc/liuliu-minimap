@@ -1,12 +1,21 @@
-<view wx:if="{{theme}}" class="theme-card" style="padding: 32rpx; border-top: 10rpx solid {{theme.vibeColor || '#5a5a40'}};">
-  <view class="meta-row" style="margin-bottom: 16rpx;">
-    <view class="meta-pill">{{theme.category || '主题'}}</view>
-    <view class="meta-pill">{{theme.locationName || '当前位置'}}</view>
+<view wx:if="{{theme}}" class="theme-card theme-display">
+  <view class="display-stage" style="background: linear-gradient(135deg, {{theme.vibeColor || '#5a5a40'}} 0%, rgba(255,255,255,0.18) 100%);">
+    <view class="display-glyph-wrap">
+      <view class="display-glyph">{{theme.displayGlyph || '遛'}}</view>
+      <view class="display-stage-title">{{theme.title}}</view>
+    </view>
   </view>
-  <view style="font-size: 40rpx; font-weight: 600; margin-bottom: 16rpx;">{{theme.title}}</view>
-  <view style="color: #6f6a5f; line-height: 1.7; margin-bottom: 24rpx;">{{theme.description}}</view>
-  <view wx:for="{{theme.missions}}" wx:key="index" class="mission-card" style="padding: 20rpx; margin-bottom: 14rpx; background: #f9f6f0;">
-    {{index + 1}}. {{item}}
+  <view class="theme-content">
+    <view class="theme-kicker">{{theme.category || modeLabel}}</view>
+    <view class="theme-title">{{theme.description || ''}}</view>
+    <view class="mission-label">今日任务</view>
+    <view wx:for="{{theme.missions}}" wx:key="index" class="mission-card mission-item">
+      <view class="mission-order">{{index + 1}}</view>
+      <view class="mission-text">{{item}}</view>
+    </view>
+    <button class="primary-btn theme-start-btn" bindtap="handleStart">
+      <view class="theme-start-main">开始这次漫步</view>
+      <view class="theme-start-sub">带着这份线索，走进今天的城市片刻</view>
+    </button>
   </view>
-  <button class="primary-btn" bindtap="handleStart" style="margin-top: 24rpx;">开始记录这次漫步</button>
 </view>
